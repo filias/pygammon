@@ -1,3 +1,11 @@
-# -*- coding: utf-8 -*-
+class Board:
+    ...
 
-"""Main module."""
+
+class Checker:
+    ...
+
+
+class Player:
+    ...
+
