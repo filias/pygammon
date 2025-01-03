@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPointF
-from PySide6.QtGui import QColor, QPolygonF
+from PySide6.QtGui import QColor, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem, QGraphicsEllipseItem, QGraphicsView
 
 
@@ -40,9 +40,16 @@ def create_backgammon_board():
             base_right,
         ])
         triangle_color = color_dark_triangle if i % 2 == 0 else color_light_triangle
-        point = QGraphicsPolygonItem(triangle)
-        point.setBrush(triangle_color)
-        scene.addItem(point)
+        triangle_polygon = QGraphicsPolygonItem(triangle)
+
+        # Line color
+        pen = QPen(triangle_color)
+        triangle_polygon.setPen(pen)
+
+        # Filling color
+        triangle_polygon.setBrush(triangle_color)
+
+        scene.addItem(triangle_polygon)
 
         # Triangle mirror for the other side of the board and change color
         # Triangle points
@@ -55,10 +62,17 @@ def create_backgammon_board():
             top_middle,
             base_right,
         ])
-        point_mirror = QGraphicsPolygonItem(triangle_mirror)
+        triangle_polygon_mirror = QGraphicsPolygonItem(triangle_mirror)
         mirror_triangle_color = color_light_triangle if i % 2 == 0 else color_dark_triangle
-        point_mirror.setBrush(mirror_triangle_color)
-        scene.addItem(point_mirror)
+
+        # Line color
+        pen_mirror = QPen(mirror_triangle_color)
+        triangle_polygon.setPen(pen_mirror)
+
+        # Filling color
+        triangle_polygon_mirror.setBrush(mirror_triangle_color)
+
+        scene.addItem(triangle_polygon_mirror)
 
     # Draw checkers (example positions)
     checker_radius = point_width * 0.4
