@@ -39,38 +39,64 @@ def create_backgammon_board():
             top_middle,
             base_right,
         ])
-        color = color_dark_triangle if i % 2 == 0 else color_light_triangle
+        triangle_color = color_dark_triangle if i % 2 == 0 else color_light_triangle
         point = QGraphicsPolygonItem(triangle)
-        point.setBrush(color)
+        point.setBrush(triangle_color)
         scene.addItem(point)
 
-        # Mirror the triangle for the other side of the board
+        # Triangle mirror for the other side of the board and change color
+        # Triangle points
+        base_left = QPointF(x_start, board_height)
+        top_middle = QPointF(x_start + point_width / 2, board_height - point_height)
+        base_right = QPointF(x_start + point_width, board_height)
+
         triangle_mirror = QPolygonF([
-            QPointF(x_start, board_height if i % 2 == 0 else point_height),
-            QPointF(x_start + point_width, board_height if i % 2 == 0 else point_height),
-            QPointF(x_start + point_width / 2, point_height if i % 2 == 0 else board_height),
+            base_left,
+            top_middle,
+            base_right,
         ])
         point_mirror = QGraphicsPolygonItem(triangle_mirror)
-        point_mirror.setBrush(color)
+        mirror_triangle_color = color_light_triangle if i % 2 == 0 else color_dark_triangle
+        point_mirror.setBrush(mirror_triangle_color)
         scene.addItem(point_mirror)
 
     # Draw checkers (example positions)
     checker_radius = point_width * 0.4
     checker_positions = [
-        (1, 1), (1, 2), (1, 3),  # First point has 3 checkers
-        (6, 1),  # Sixth point has 1 checker
-        (12, 1), (12, 2),  # Twelfth point has 2 checkers
+        (1, 1), (1, 2),
+        (6, 1), (6, 2), (6, 3), (6, 4), (6, 5),
+        (8, 1), (8, 2), (8, 3),
+        (12, 1), (12, 2), (12, 3), (12, 4), (12, 5),
+        (13, 1), (13, 2), (13, 3), (13, 4), (13, 5),
+        (17, 1), (17, 2), (17, 3),
+        (19, 1), (19, 2), (19, 3), (19, 4), (19, 5),
+        (24, 1), (24, 2),
     ]
     for point_index, checker_index in checker_positions:
-        x_checker = point_index * point_width + point_width / 2 - checker_radius
-        y_checker = checker_index * checker_radius * 2 if point_index <= 6 else board_height - (checker_index * checker_radius * 2)
+        # Bottom checkers
+        if point_index <= 12:
+            x_checker = (point_index - 1)  * point_width + point_width / 2 - checker_radius
+            y_checker = board_height - (checker_index * checker_radius * 2)
+        else:  # Top checkers
+            x_checker = board_height + point_index * point_width + point_width / 2 + checker_radius
+            y_checker = (
+                checker_index * checker_radius * 2
+                if point_index <= 6
+                else board_height - (checker_index * checker_radius * 2)
+            )
+
         checker = QGraphicsEllipseItem(x_checker, y_checker, checker_radius * 2, checker_radius * 2)
-        checker.setBrush(color_dark_checker)
+
+        # Set the color
+        if point_index in (1, 12, 17, 19):
+            checker.setBrush(color_light_checker)
+        else:
+            checker.setBrush(color_dark_checker)
+
         scene.addItem(checker)
 
     # Create and show view
     view = QGraphicsView(scene)
     view.setScene(scene)
-    #view.setRenderHint(view.RenderHint.Antialiasing)
     view.setFixedSize(board_width + 20, board_height + 20)
     return view

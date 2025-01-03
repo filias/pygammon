@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QMainWindow
+from PySide6.QtGui import QPixmap, Qt
+from PySide6.QtWidgets import QMainWindow, QLabel
 
 
 class BackgammonWindow(QMainWindow):
