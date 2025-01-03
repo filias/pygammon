@@ -67,33 +67,29 @@ def create_backgammon_board():
         (6, 1), (6, 2), (6, 3), (6, 4), (6, 5),
         (8, 1), (8, 2), (8, 3),
         (12, 1), (12, 2), (12, 3), (12, 4), (12, 5),
-        (13, 1), (13, 2), (13, 3), (13, 4), (13, 5),
-        (17, 1), (17, 2), (17, 3),
-        (19, 1), (19, 2), (19, 3), (19, 4), (19, 5),
-        (24, 1), (24, 2),
     ]
     for point_index, checker_index in checker_positions:
         # Bottom checkers
-        if point_index <= 12:
-            x_checker = (point_index - 1)  * point_width + point_width / 2 - checker_radius
-            y_checker = board_height - (checker_index * checker_radius * 2)
-        else:  # Top checkers
-            x_checker = board_height + point_index * point_width + point_width / 2 + checker_radius
-            y_checker = (
-                checker_index * checker_radius * 2
-                if point_index <= 6
-                else board_height - (checker_index * checker_radius * 2)
-            )
+        x_checker = (point_index - 1)  * point_width + point_width / 2 - checker_radius
+        y_checker = board_height - (checker_index * checker_radius * 2)
+
+        # Mirror checkers for the top side
+        x_mirror_checker = (point_index - 1) * point_width + point_width / 2 - checker_radius
+        y_mirror_checker = checker_index * checker_radius * 2 - checker_radius * 2
 
         checker = QGraphicsEllipseItem(x_checker, y_checker, checker_radius * 2, checker_radius * 2)
+        mirror_checker = QGraphicsEllipseItem(x_mirror_checker, y_mirror_checker, checker_radius * 2, checker_radius * 2)
 
         # Set the color
-        if point_index in (1, 12, 17, 19):
+        if point_index in (1, 12):
             checker.setBrush(color_light_checker)
+            mirror_checker.setBrush(color_dark_checker)
         else:
             checker.setBrush(color_dark_checker)
+            mirror_checker.setBrush(color_light_checker)
 
         scene.addItem(checker)
+        scene.addItem(mirror_checker)
 
     # Create and show view
     view = QGraphicsView(scene)
