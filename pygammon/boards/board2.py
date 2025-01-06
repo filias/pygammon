@@ -1,7 +1,8 @@
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QPolygonF, QPen
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem, QGraphicsEllipseItem
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
 
+from pygammon.checker import MovableChecker
 
 # Board settings
 BOARD_WIDTH = 800
@@ -108,20 +109,20 @@ def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
         )
         y_mirror_checker = checker_index * CHECKER_RADIUS * 2 - CHECKER_RADIUS * 2
 
-        checker = QGraphicsEllipseItem(
-            x_checker, y_checker, CHECKER_RADIUS * 2, CHECKER_RADIUS * 2
-        )
-        mirror_checker = QGraphicsEllipseItem(
-            x_mirror_checker, y_mirror_checker, CHECKER_RADIUS * 2, CHECKER_RADIUS * 2
-        )
-
         # Set the color
         if point_index in (1, 12):
-            checker.setBrush(COLOR_LIGHT_CHECKER)
-            mirror_checker.setBrush(COLOR_DARK_CHECKER)
+            checker_color = COLOR_LIGHT_CHECKER
+            mirror_checker_color = COLOR_DARK_CHECKER
         else:
-            checker.setBrush(COLOR_DARK_CHECKER)
-            mirror_checker.setBrush(COLOR_LIGHT_CHECKER)
+            checker_color = COLOR_DARK_CHECKER
+            mirror_checker_color = COLOR_LIGHT_CHECKER
+
+        checker = MovableChecker(
+            x_checker, y_checker, CHECKER_RADIUS * 2, checker_color
+        )
+        mirror_checker = MovableChecker(
+            x_mirror_checker, y_mirror_checker, CHECKER_RADIUS * 2, mirror_checker_color
+        )
 
         scene.addItem(checker)
         scene.addItem(mirror_checker)
