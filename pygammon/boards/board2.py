@@ -87,6 +87,7 @@ def create_backgammon_board() -> QGraphicsScene:
 
 def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
     for point_index, checker_index in INITIAL_POSITION:
+        print(f"Drawing checker at point {point_index} and checker {checker_index}")
         # Bottom checkers
         x_checker = (point_index - 1) * settings.point_width + settings.point_width / 2 - settings.checker_radius
         y_checker = settings.board_height - (checker_index * settings.checker_radius * 2)
@@ -115,4 +116,4 @@ def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
         scene.addItem(checker)
         scene.addItem(mirror_checker)
 
-        return scene
+    return scene
