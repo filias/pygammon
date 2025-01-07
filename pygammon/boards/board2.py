@@ -3,20 +3,8 @@ from PySide6.QtGui import QColor, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
 
 from pygammon.checker import MovableChecker
+from pygammon.conf import settings
 
-# Board settings
-BOARD_WIDTH = 800
-BOARD_HEIGHT = BOARD_WIDTH * 10 / 14  # Calculated this with a square paper and based on a real board
-POINT_WIDTH = BOARD_WIDTH / 14  # 12 points + gutters
-POINT_HEIGHT = POINT_WIDTH * 4
-CHECKER_RADIUS = POINT_WIDTH * 0.4
-
-# Colors
-COLOR_DARK_TRIANGLE = QColor("#3662cb")  # Dark triangles
-COLOR_LIGHT_TRIANGLE = QColor("#618dd6")  # Light triangles
-COLOR_BOARD = QColor("#3e72d8")  # Board background
-COLOR_DARK_CHECKER = QColor("#2e2da2")  # Dark checker color
-COLOR_LIGHT_CHECKER = QColor("#d2d8f2")  # Light checker color
 
 # Initial position
 INITIAL_POSITION = [
@@ -39,43 +27,43 @@ INITIAL_POSITION = [
 
 def create_backgammon_board() -> QGraphicsScene:
     scene = QGraphicsScene()
-    scene.setBackgroundBrush(COLOR_BOARD)
-    scene.setSceneRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT)  # Scene size
+    scene.setBackgroundBrush(QColor(settings.color_board))
+    scene.setSceneRect(0, 0, settings.board_width, settings.board_height)  # Scene size
 
     # Draw points (triangles)
     for i in range(12):  # 12 points on each side
         if i == 0:
             x_start = 0
         else:
-            x_start = i * POINT_WIDTH
+            x_start = i * settings.point_width
 
         # Triangle points
         base_left = QPointF(x_start, 0)
-        top_middle = QPointF(x_start + POINT_WIDTH / 2, POINT_HEIGHT)
-        base_right = QPointF(x_start + POINT_WIDTH, 0)
+        top_middle = QPointF(x_start + settings.point_width / 2, settings.point_height)
+        base_right = QPointF(x_start + settings.point_width, 0)
 
         triangle = QPolygonF([
             base_left,
             top_middle,
             base_right,
         ])
-        triangle_color = COLOR_DARK_TRIANGLE if i % 2 == 0 else COLOR_LIGHT_TRIANGLE
+        triangle_color = settings.color_dark_triangle if i % 2 == 0 else settings.color_light_triangle
         triangle_polygon = QGraphicsPolygonItem(triangle)
 
         # Line color
-        pen = QPen(triangle_color)
+        pen = QPen(QColor(triangle_color))
         triangle_polygon.setPen(pen)
 
         # Filling color
-        triangle_polygon.setBrush(triangle_color)
+        triangle_polygon.setBrush(QColor(triangle_color))
 
         scene.addItem(triangle_polygon)
 
         # Triangle mirror for the other side of the board and change color
         # Triangle points
-        base_left = QPointF(x_start, BOARD_HEIGHT)
-        top_middle = QPointF(x_start + POINT_WIDTH / 2, BOARD_HEIGHT - POINT_HEIGHT)
-        base_right = QPointF(x_start + POINT_WIDTH, BOARD_HEIGHT)
+        base_left = QPointF(x_start, settings.board_height)
+        top_middle = QPointF(x_start + settings.point_width / 2, settings.board_height - settings.point_height)
+        base_right = QPointF(x_start + settings.point_width, settings.board_height)
 
         triangle_mirror = QPolygonF([
             base_left,
@@ -83,14 +71,14 @@ def create_backgammon_board() -> QGraphicsScene:
             base_right,
         ])
         triangle_polygon_mirror = QGraphicsPolygonItem(triangle_mirror)
-        mirror_triangle_color = COLOR_LIGHT_TRIANGLE if i % 2 == 0 else COLOR_DARK_TRIANGLE
+        mirror_triangle_color = QColor(settings.color_light_triangle) if i % 2 == 0 else QColor(settings.color_dark_triangle)
 
         # Line color
-        pen_mirror = QPen(mirror_triangle_color)
+        pen_mirror = QPen(QColor(mirror_triangle_color))
         triangle_polygon.setPen(pen_mirror)
 
         # Filling color
-        triangle_polygon_mirror.setBrush(mirror_triangle_color)
+        triangle_polygon_mirror.setBrush(QColor(mirror_triangle_color))
 
         scene.addItem(triangle_polygon_mirror)
 
@@ -100,28 +88,28 @@ def create_backgammon_board() -> QGraphicsScene:
 def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
     for point_index, checker_index in INITIAL_POSITION:
         # Bottom checkers
-        x_checker = (point_index - 1) * POINT_WIDTH + POINT_WIDTH / 2 - CHECKER_RADIUS
-        y_checker = BOARD_HEIGHT - (checker_index * CHECKER_RADIUS * 2)
+        x_checker = (point_index - 1) * settings.point_width + settings.point_width / 2 - settings.checker_radius
+        y_checker = settings.board_height - (checker_index * settings.checker_radius * 2)
 
         # Mirror checkers for the top side
         x_mirror_checker = (
-            (point_index - 1) * POINT_WIDTH + POINT_WIDTH / 2 - CHECKER_RADIUS
+            (point_index - 1) * settings.point_width + settings.point_width / 2 - settings.checker_radius
         )
-        y_mirror_checker = checker_index * CHECKER_RADIUS * 2 - CHECKER_RADIUS * 2
+        y_mirror_checker = checker_index * settings.checker_radius * 2 - settings.checker_radius * 2
 
         # Set the color
         if point_index in (1, 12):
-            checker_color = COLOR_LIGHT_CHECKER
-            mirror_checker_color = COLOR_DARK_CHECKER
+            checker_color = QColor(settings.color_light_checker)
+            mirror_checker_color = QColor(settings.color_dark_checker)
         else:
-            checker_color = COLOR_DARK_CHECKER
-            mirror_checker_color = COLOR_LIGHT_CHECKER
+            checker_color = QColor(settings.color_dark_checker)
+            mirror_checker_color = QColor(settings.color_light_checker)
 
         checker = MovableChecker(
-            x_checker, y_checker, CHECKER_RADIUS * 2, checker_color
+            x_checker, y_checker, settings.checker_radius * 2, checker_color
         )
         mirror_checker = MovableChecker(
-            x_mirror_checker, y_mirror_checker, CHECKER_RADIUS * 2, mirror_checker_color
+            x_mirror_checker, y_mirror_checker, settings.checker_radius * 2, mirror_checker_color
         )
 
         scene.addItem(checker)
