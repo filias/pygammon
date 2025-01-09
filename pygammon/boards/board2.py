@@ -53,6 +53,8 @@ def create_backgammon_board() -> QGraphicsScene:
         pen = QPen(triangle_color)
 
         x_start = i * settings.point_width
+        if i >= 6:
+            x_start += settings.point_width
 
         # Triangle points
         base_left = QPointF(x_start, 0)
@@ -98,14 +100,21 @@ def create_backgammon_board() -> QGraphicsScene:
 def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
     for point_index, checker_index in INITIAL_POSITION:
         print(f"Drawing checker at point {point_index} and checker {checker_index}")
+
         # Top checkers
         x_checker = (point_index - 1) * settings.point_width + settings.point_width / 2 - settings.checker_radius
+        if point_index > 6:
+            print(f"Adjusting x for point {point_index} from {x_checker} to {x_checker + 10 * settings.point_width}")
+            x_checker += settings.point_width
         y_checker = settings.board_height - (checker_index * settings.checker_radius * 2)
 
         # Mirror checkers for the bottom side
         x_mirror_checker = (
             (point_index - 1) * settings.point_width + settings.point_width / 2 - settings.checker_radius
         )
+        if point_index > 6:
+            print(f"Adjusting x for point {point_index} from {x_checker} to {x_checker + 10 * settings.point_width}")
+            x_mirror_checker += settings.point_width
         y_mirror_checker = checker_index * settings.checker_radius * 2 - settings.checker_radius * 2
 
         # Set the color
@@ -116,9 +125,13 @@ def add_initial_position(scene: QGraphicsScene) -> QGraphicsScene:
             checker_color = QColor(settings.color_dark_checker)
             mirror_checker_color = QColor(settings.color_light_checker)
 
+        # Add checkers to the scene
+        print(f"Adding top checker to the scene with {x_checker}, {y_checker}, {point_index} and {checker_index}")
         checker = MovableChecker(
             x_checker, y_checker, settings.checker_radius * 2, checker_color
         )
+
+        print(f"Adding bottom checker to the scene with {x_mirror_checker}, {y_mirror_checker}, {point_index} and {checker_index}")
         mirror_checker = MovableChecker(
             x_mirror_checker, y_mirror_checker, settings.checker_radius * 2, mirror_checker_color
         )
