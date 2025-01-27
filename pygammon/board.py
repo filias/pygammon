@@ -2,6 +2,7 @@ from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
 
+from pygammon.pygammon import Color
 from pygammon.checker import MovableChecker
 from pygammon.conf import settings
 
@@ -80,73 +81,46 @@ class PygammonScene(QGraphicsScene):
             )  # Filling color
             self.addItem(triangle_polygon_mirror)
 
+    def _calculate_x_checker(self, point_index: int) -> float:
+        if point_index >= 13:  # Bottom checkers
+            point_index = 25 - point_index
+
+        x_point = (point_index - 1) * settings.point_width  # Closer to 0
+        x_middle_of_point = settings.point_width / 2
+        x_checker = x_point + x_middle_of_point - settings.checker_radius
+
+        if point_index > 6:  # Compensate for the bar
+            x_checker += settings.point_width
+
+        return x_checker
+
+    def _calculate_y_checker(self, point_index, checker_index: int) -> float:
+        checker_height = checker_index * settings.checker_radius * 2
+
+        if point_index >= 13:  # Bottom checkers
+            y_checker = settings.board_height - checker_height
+        else: # Top checkers
+            y_checker = checker_height - settings.checker_radius * 2
+
+        return y_checker
+
     def draw_checkers(self):
         for point_index, checkers in self.board.position.items():
-            print(f"Drawing checkers at point {point_index}")
+            print(f"Drawing {len(checkers)} checkers at point {point_index}")
+
+            # Define the checker color
+            checker_color = settings.color_dark_checker if checkers[0] == Color.DARK else settings.color_light_checker
+            x_checker = self._calculate_x_checker(point_index)
 
             for checker_index in range(1, len(checkers) + 1):
-                print(f"Drawing checker at point {point_index} and checker {checker_index}")
-
-                # Top checkers
-                x_checker = (
-                    (point_index - 1) * settings.point_width
-                    + settings.point_width / 2
-                    - settings.checker_radius
-                )
-                if point_index > 6:
-                    # print(
-                    #     f"Adjusting x for point {point_index} from {x_checker} to {x_checker + 10 * settings.point_width}"
-                    # )
-                    x_checker += settings.point_width
-                y_checker = settings.board_height - (
-                    checker_index * settings.checker_radius * 2
-                )
-
-                # Mirror checkers for the bottom side
-                x_mirror_checker = (
-                    (point_index - 1) * settings.point_width
-                    + settings.point_width / 2
-                    - settings.checker_radius
-                )
-                if point_index > 6:
-                    # print(
-                    #     f"Adjusting x for point {point_index} from {x_checker} to {x_checker + 10 * settings.point_width}"
-                    # )
-                    x_mirror_checker += settings.point_width
-                y_mirror_checker = (
-                    checker_index * settings.checker_radius * 2
-                    - settings.checker_radius * 2
-                )
-
-                # Set the color
-                if point_index in (1, 12):
-                    checker_color = QColor(settings.color_light_checker)
-                    mirror_checker_color = QColor(settings.color_dark_checker)
-                else:
-                    checker_color = QColor(settings.color_dark_checker)
-                    mirror_checker_color = QColor(settings.color_light_checker)
+                y_checker = self._calculate_y_checker(point_index, checker_index)
 
                 # Add checkers to the scene
-                print(
-                    f"Adding top checker to the scene with {x_checker}, {y_checker}, {point_index} and {checker_index}"
-                )
+                print(f"Adding checker: {x_checker}, {y_checker}, {point_index} and {checker_index}")
                 checker = MovableChecker(
                     x_checker, y_checker, settings.checker_radius * 2, checker_color
                 )
-
-                print(
-                    f"Adding bottom checker to the scene with {x_mirror_checker}, {y_mirror_checker}, {point_index} and {checker_index}"
-                )
-                mirror_checker = MovableChecker(
-                    x_mirror_checker,
-                    y_mirror_checker,
-                    settings.checker_radius * 2,
-                    mirror_checker_color,
-                )
-
                 self.addItem(checker)
-                self.addItem(mirror_checker)
-
 
 def _get_color(index: int) -> QColor:
     if index % 2 == 0:
