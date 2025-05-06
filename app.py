@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QApplication, QGraphicsView
 
-from pygammon.game import Game
-from pygammon.board import PygammonScene
+from pygammon.logic.game import Game
+from pygammon.ui.board import PygammonScene
 from pygammon.conf import settings
-from pygammon.window import BackgammonWindow
+from pygammon.ui.window import BackgammonWindow
 
 
 if __name__ == "__main__":

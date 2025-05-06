@@ -5,9 +5,13 @@ from pydantic_settings import BaseSettings
 class PygammonConfig(BaseSettings):
     # Board settings
     board_width: PositiveInt = 800
-    board_height: float = board_width * 10 / 14  # Calculated this with a square paper and based on a real board
-    point_width: float = board_width / 14  # 12 points + gutters
+    board_height: float = board_width / 1.6  # Golden number
+    point_width: float = board_width * 8 / 22 / 6  # 12 points + gutters
     point_height: float = point_width * 4
+    bar_width: float = board_width / 11
+    gutter_width: float = bar_width
+    score_width: float = bar_width
+    point_numbers_height: float = bar_width / 2
     checker_radius: float = point_width * 0.4
 
     # Colors
