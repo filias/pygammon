@@ -34,7 +34,7 @@ View: PygammonScene, MovableChecker, QGraphicsView
 Controller: app.py, BackgammonWindow
 
 ## Project Structure
-<span style="color:red">Como faço para 'desenhar' aqui a estrutura?</span>
+<img src="structure.png" width="200">
 
 ## Authors
 Developed by Filipa.
