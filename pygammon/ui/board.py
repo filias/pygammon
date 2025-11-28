@@ -20,7 +20,7 @@ class PygammonScene(QGraphicsScene):
             0, 0, settings.board_width, settings.board_height
         )  # Scene size
 
-        # Draw triangles (board points) (0,0 is up, left)
+        # Draw triangles (board points) (0,0 is down, left)
         for i in range(12):  # 12 points on each side
             #print(f"Setting up triangle {i}")
 
@@ -123,6 +123,7 @@ class PygammonScene(QGraphicsScene):
                 self.addItem(checker)
 
 def _get_color(index: int) -> QColor:
+    print(f"Getting color: {index}")
     if index % 2 == 0:
         return QColor(settings.color_dark_triangle)
 
