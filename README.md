@@ -14,8 +14,12 @@ A backgammon game written in **Python**, using **PySide6** for the graphical int
 ## Installation
 
 ### 1. Clone the repository
+
+```bash
 git clone https://github.com/filias/pygammon.git  
+
 cd pygammon
+```
 
 
 ### 2. Activate the virtual environment
@@ -26,7 +30,9 @@ Using uv:
     uv sync
 
 ## Run the game
+```bash
 python app.py
+```
 
 ## Architecture (MVC)
 Model: Game, Board, Player, Color  
