@@ -23,11 +23,15 @@ cd pygammon
 
 
 ### 2. Activate the virtual environment
+```bash
 .venv\Scripts\activate
+```
 
 ### 3. Install dependencies
 Using uv:
+    ```bash
     uv sync
+    ```
 
 ## Run the game
 ```bash
