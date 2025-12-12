@@ -2,6 +2,13 @@ from pygammon.logic.dice import Die
 from pygammon.logic.models import Player, Position, Point
 
 
+# The final goal is to get a list of all the possible moves for each dice roll
+# def get_all_valid_moves(player: Player, position: Position, dice: Dice) -> List[Move]:
+#
+
+# Teresa:
+# 1. Add type annotation
+
 def select_checker_to_play(player: Player, position: Position) -> Point:
 
     # TODO: the numbers of the points change from player to player, think about how to do that

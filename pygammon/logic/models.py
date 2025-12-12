@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, List
 
 
 class Color(StrEnum):
@@ -15,17 +15,18 @@ Position = Annotated[dict[Point, list[Checker]], ...]
 class Board:
     position: Position
     bar: list[Checker]
-    off: list[Checker]
+    off_dark: list[Checker]
+    off_light: list[Checker]
     main_direction: Checker
 
     class Config:
         arbitrary_types_allowed = True
 
-    def __init__(self):
+    def __init__(self, off_light: list | None = None, off_dark: list | None = None):
         self.position = self.initial_position
         self.bar = []
-        self.off_dark = []
-        self.off_light = []
+        self.off_dark = off_dark or []
+        self.off_light = off_light or []
         self.main_direction = Checker.DARK
 
     @property
@@ -57,6 +58,22 @@ class Player(BaseModel):
 
 
 class Move(BaseModel):
-    checker: Checker
-    from_position: int
-    to_position: int
+    checker1_from: Point
+    checker1_to: Point
+    checker2_from: Point
+    checker2_to: Point
+    # can be 4 checkers to move when we roll a double
+    checker3_from: Point | None = None
+    checker3_to: Point | None = None
+    checker4_from: Point | None = None
+    checker4_to: Point | None = None
+
+
+class Game(BaseModel):
+    board: Board = Field(default_factory=Board)
+    player1: Player = Field(default_factory=lambda: Player(name="Player 1", color=Color.DARK))
+    player2: Player = Field(default_factory=lambda: Player(name="Player 2", color=Color.LIGHT))
+    current_player: Player = Field(default=None)
+    moves: dict[int, Move] = Field(default_factory=dict)
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication, QGraphicsView
 
-from pygammon.logic.game import Game
+from pygammon.logic.models import Game
 from pygammon.ui.board import PygammonScene
 from pygammon.conf import settings
 from pygammon.ui.window import BackgammonWindow
