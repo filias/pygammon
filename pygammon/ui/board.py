@@ -2,7 +2,7 @@ from PySide6.QtCore import QPointF
 from PySide6.QtGui import QColor, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
 
-from pygammon.logic.pygammon import Color
+from pygammon.logic.models import Color
 from pygammon.ui.checker import MovableChecker
 from pygammon.conf import settings
 

@@ -1,4 +1,4 @@
-from logic.models import Position, Checker
+from .models import Position, Checker
 
 initial_position = Position(
     {

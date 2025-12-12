@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from pygammon.logic.pygammon import Board, Player, Move, Color
+from pygammon.logic.models import Board, Player, Move, Color
 
 
 class Game(BaseModel):
