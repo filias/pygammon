@@ -1,4 +1,3 @@
-from pygammon.logic.dice import Die
 from pygammon.logic.models import Player, Position, Point
 
 

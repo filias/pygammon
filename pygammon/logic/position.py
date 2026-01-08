@@ -1,4 +1,4 @@
-from pygammon.logic.models import Position, Checker, Board, Player, Color
+from pygammon.logic.models import Position, Checker, Board, Color
 
 initial_position = Position(
     {
