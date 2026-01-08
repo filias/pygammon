@@ -69,6 +69,19 @@ class Move(BaseModel):
     checker4_to: Point | None = None
 
 
+class CheckerMove(BaseModel):
+    """Represents a single checker move in backgammon."""
+    from_point: Point | None = None  # None when entering from bar
+    to_point: Point | None = None  # None when bearing off
+    die_value: int = Field(..., ge=1, le=6)
+
+
+class BackgammonMove(BaseModel):
+    """Represents a complete move in backgammon, consisting of multiple checker moves."""
+    checker_moves: List[CheckerMove] = Field(default_factory=list)
+    dice: tuple[int, int] = Field(...)  # The dice roll that enables this move
+
+
 class Game(BaseModel):
     board: Board = Field(default_factory=Board)
     player1: Player = Field(default_factory=lambda: Player(name="Player 1", color=Color.DARK))
