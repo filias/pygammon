@@ -1,11 +1,24 @@
+import secrets
+
 from pydantic import BaseModel, Field, ConfigDict
 from enum import StrEnum
 from typing import Annotated, List
 
 
 class Color(StrEnum):
+    """Represents the two player colors in backgammon."""
     DARK = "dark"
     LIGHT = "light"
+
+
+class Die(BaseModel):
+    """Represents a single die with a value between 1 and 6."""
+    value: int = Field(..., ge=1, le=6)
+
+    def roll(self) -> int:
+        """Roll the die and return the new value."""
+        self.value = secrets.randbelow(6) + 1
+        return self.value
 
 Checker = Annotated[Color, Field(alias="checker")]
 Point = Annotated[int, Field(ge=1, le=24)]
@@ -13,6 +26,7 @@ Position = Annotated[dict[Point, list[Checker]], ...]
 
 
 class Board:
+    """Represents the backgammon board with checker positions, bar, and borne-off checkers."""
     position: Position
     bar: list[Checker]
     off_dark: list[Checker]
@@ -53,20 +67,9 @@ class Board:
 
 
 class Player(BaseModel):
+    """Represents a player with a name and assigned color."""
     name: str
     color: Color
-
-
-class Move(BaseModel):
-    checker1_from: Point
-    checker1_to: Point
-    checker2_from: Point
-    checker2_to: Point
-    # can be 4 checkers to move when we roll a double
-    checker3_from: Point | None = None
-    checker3_to: Point | None = None
-    checker4_from: Point | None = None
-    checker4_to: Point | None = None
 
 
 class CheckerMove(BaseModel):
@@ -83,10 +86,11 @@ class BackgammonMove(BaseModel):
 
 
 class Game(BaseModel):
+    """Represents a backgammon game with board state, players, and move history."""
     board: Board = Field(default_factory=Board)
     player1: Player = Field(default_factory=lambda: Player(name="Player 1", color=Color.DARK))
     player2: Player = Field(default_factory=lambda: Player(name="Player 2", color=Color.LIGHT))
     current_player: Player = Field(default=None)
-    moves: dict[int, Move] = Field(default_factory=dict)
+    moves: dict[int, BackgammonMove] = Field(default_factory=dict)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
