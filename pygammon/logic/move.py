@@ -1,3 +1,5 @@
+from typing import Optional, Tuple
+
 from pygammon.logic.models import Player, Position, Point
 
 
@@ -8,14 +10,17 @@ from pygammon.logic.models import Player, Position, Point
 # Teresa:
 # 1. Add type annotation
 
-def select_checker_to_play(player: Player, position: Position) -> Point:
+def select_checker_to_play(
+        player: Player,
+        position: Position
+        ) -> Optional[Point]:
 
     # TODO: the numbers of the points change from player to player, think about how to do that
     # Chose the checker more far away
     """
     Select the checker that is the farthest from the player's home.
 
-    LIGHT player: moves from point 1 -> 24
+    LIGHT player: moves from point 1 -> 24s
     DARK player: moves from point 24 -> 1
 
     So:
@@ -40,7 +45,12 @@ def select_checker_to_play(player: Player, position: Position) -> Point:
     # If the player has no checkers on the board
     return None
 
-def checker_can_move(from_point, die_value, player, position):
+def checker_can_move(
+        from_point: Point,
+        die_value: int,
+        player: Player, 
+        position: Position
+        )-> Tuple [bool, Optional[Point]]:
     """
     Return (True, target) if a checker on from_point can move by die_value.
     Return (False, None) when the destination is blocked.
@@ -74,7 +84,12 @@ def checker_can_move(from_point, die_value, player, position):
     # two or more opponent checkers -> blocked
     return False, None
 
-def move_checker(from_point, to_point, player, position):
+def move_checker(
+        from_point: Point,
+        to_point: Point,
+        player: Player,
+        position: Position
+        )-> Tuple[Optional[str], bool]:
     """
     Move a checker in the 'position' dict.
     Returns a tuple: (opponent_color_or_None, borne_off_bool)
