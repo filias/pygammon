@@ -1,38 +1,67 @@
-# test_move_checker.py
 import copy
+import pytest
 from pygammon.logic.models import Player, Color
 from pygammon.logic.position import initial_position
-from pygammon.logic.move import checker_can_move, move_checker
+from pygammon.logic.move import move_checker
 
-light = Player(name="L", color=Color.LIGHT)
-dark = Player(name="D", color=Color.DARK)
 
-# Scenario A: normal move LIGHT from 1 by 3 -> to 4 (empty)
-pos1 = copy.deepcopy(initial_position)
-print("Initial pos snapshot (1):", pos1.get(4), pos1.get(9), pos1.get(10), pos1.get(11))
+def test_normal_move_to_empty_point():
+    light = Player(name="L", color=Color.LIGHT)
+    pos = copy.deepcopy(initial_position)
 
-ok, target = checker_can_move(1, 3, light, pos1)
-print("Scenario A can_move:", ok, target)
-res = move_checker(1, target, light, pos1)
-print("Scenario A move result (opponent, borne_off):", res)
-print("After move: pos1[4] =", pos1.get(4))
+    opponent, borne_off = move_checker(1, 4, light, pos)
 
-# Scenario B: hit move (ensure Dark has a checker at 12 to move)
-pos2 = copy.deepcopy(initial_position)
-pos2[10] = [Color.LIGHT]   # single opponent to be hit
-pos2[12] = [Color.DARK]    # ensure Dark has a checker at 12 to move
-print("\nBefore hit: pos2[12] =", pos2.get(12), " pos2[10] =", pos2.get(10))
-ok, target = checker_can_move(12, 2, dark, pos2)
-print("Scenario B can_move:", ok, target)
-res = move_checker(12, target, dark, pos2)
-print("Scenario B move result (opponent, borne_off):", res)
-print("After hit: pos2[12] =", pos2.get(12), " pos2[10] =", pos2.get(10))
+    assert opponent is None
+    assert borne_off is False
+    assert Color.LIGHT in pos.get(4, [])
 
-# Scenario C: borne-off (simple)
-pos3 = copy.deepcopy(initial_position)
-pos3[23] = [Color.LIGHT]   # put a light checker near the end
-ok, target = checker_can_move(23, 2, light, pos3)
-print("\nScenario C can_move:", ok, target)
-res = move_checker(23, target, light, pos3)
-print("Scenario C move result (opponent, borne_off):", res)
-print("After borne-off pos3[23] =", pos3.get(23))
+
+def test_hit_single_opponent():
+    dark = Player(name="D", color=Color.DARK)
+    pos = copy.deepcopy(initial_position)
+    pos[10] = [Color.LIGHT]  # single opponent to hit
+    pos[12] = [Color.DARK]   # dark checker to move
+
+    opponent, borne_off = move_checker(12, 10, dark, pos)
+
+    assert opponent == Color.LIGHT
+    assert borne_off is False
+    assert pos[10] == [Color.DARK]
+
+
+def test_bear_off():
+    light = Player(name="L", color=Color.LIGHT)
+    pos = {23: [Color.LIGHT]}
+
+    opponent, borne_off = move_checker(23, 25, light, pos)
+
+    assert opponent is None
+    assert borne_off is True
+    assert pos.get(23) == []
+
+
+def test_move_nonexistent_checker_raises():
+    light = Player(name="L", color=Color.LIGHT)
+    pos = {}
+
+    with pytest.raises(ValueError):
+        move_checker(1, 4, light, pos)
+
+
+def test_move_wrong_color_checker_raises():
+    light = Player(name="L", color=Color.LIGHT)
+    pos = {1: [Color.DARK]}
+
+    with pytest.raises(ValueError):
+        move_checker(1, 4, light, pos)
+
+
+def test_move_to_same_color_stacks():
+    light = Player(name="L", color=Color.LIGHT)
+    pos = {1: [Color.LIGHT], 4: [Color.LIGHT]}
+
+    opponent, borne_off = move_checker(1, 4, light, pos)
+
+    assert opponent is None
+    assert borne_off is False
+    assert pos[4] == [Color.LIGHT, Color.LIGHT]
