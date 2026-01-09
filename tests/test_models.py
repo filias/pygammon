@@ -7,8 +7,10 @@ from pygammon.logic.models import (
     CheckerMove,
     BackgammonMove,
     Board,
-    BAR,
-    BEAR_OFF,
+    BAR_DECREASING,
+BAR_INCREASING,
+    BEAR_OFF_INCREASING,
+BEAR_OFF_DECREASING,
 )
 
 
@@ -46,21 +48,43 @@ class TestPlayer:
 
 
 class TestCheckerMove:
-    def test_checker_move_normal(self):
-        move = CheckerMove(from_point=1, to_point=4, die_value=3)
-        assert move.from_point == 1
-        assert move.to_point == 4
-        assert move.die_value == 3
+    def test_checker_move_normal_increasing(self):
+        assert CheckerMove(from_point=1, to_point=2, die_value=1)
+        assert CheckerMove(from_point=4, to_point=6, die_value=2)
+        assert CheckerMove(from_point=9, to_point=12, die_value=3)
+        assert CheckerMove(from_point=13, to_point=17, die_value=4)
+        assert CheckerMove(from_point=18, to_point=23, die_value=5)
+        assert CheckerMove(from_point=14, to_point=20, die_value=6)
 
-    def test_checker_move_from_bar(self):
-        move = CheckerMove(from_point=BAR, to_point=3, die_value=3)
-        assert move.from_point == 0
-        assert move.to_point == 3
+    def test_checker_move_decreasing(self):
+        assert CheckerMove(from_point=23, to_point=22, die_value=1)
+        assert CheckerMove(from_point=20, to_point=18, die_value=2)
+        assert CheckerMove(from_point=17, to_point=14, die_value=3)
+        assert CheckerMove(from_point=12, to_point=8, die_value=4)
+        assert CheckerMove(from_point=15, to_point=10, die_value=5)
+        assert CheckerMove(from_point=7, to_point=1, die_value=6)
 
-    def test_checker_move_bear_off(self):
-        move = CheckerMove(from_point=22, to_point=BEAR_OFF, die_value=3)
-        assert move.from_point == 22
-        assert move.to_point == 25
+    def test_checker_move_from_bar_increasing(self):
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=1, die_value=1)
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=2, die_value=2)
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=3, die_value=3)
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=4, die_value=4)
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=5, die_value=5)
+        assert CheckerMove(from_point=BAR_INCREASING, to_point=6, die_value=6)
+
+    def test_checker_move_from_bar_decreasing(self):
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=24, die_value=1)
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=23, die_value=2)
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=22, die_value=3)
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=21, die_value=4)
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=20, die_value=5)
+        assert CheckerMove(from_point=BAR_DECREASING, to_point=19, die_value=6)
+
+    def test_checker_move_bear_off_increasing(self):
+        assert CheckerMove(from_point=22, to_point=BEAR_OFF_INCREASING, die_value=3)
+
+    def test_checker_move_bear_off_decreasing(self):
+        assert CheckerMove(from_point=3, to_point=BEAR_OFF_DECREASING, die_value=3)
 
     def test_checker_move_invalid_die_value(self):
         with pytest.raises(ValidationError):
@@ -69,6 +93,10 @@ class TestCheckerMove:
     def test_checker_move_invalid_point(self):
         with pytest.raises(ValidationError):
             CheckerMove(from_point=26, to_point=1, die_value=1)
+
+    def test_checker_move_invalid(self):
+        with pytest.raises(ValidationError):
+            CheckerMove(from_point=23, to_point=10, die_value=5)
 
 
 class TestBackgammonMove:
@@ -111,11 +139,3 @@ class TestBoard:
         assert board.position[1][0] == Color.DARK
         assert len(board.position[24]) == 2
         assert board.position[24][0] == Color.LIGHT
-
-
-class TestConstants:
-    def test_bar_constant(self):
-        assert BAR == 0
-
-    def test_bear_off_constant(self):
-        assert BEAR_OFF == 25

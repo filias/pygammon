@@ -1,8 +1,8 @@
 import secrets
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from enum import StrEnum
-from typing import Annotated, List
+from typing import Annotated, List, Self
 
 
 class Color(StrEnum):
@@ -22,8 +22,10 @@ class Die(BaseModel):
 
 Checker = Annotated[Color, Field(alias="checker")]
 
-BAR = 0
-BEAR_OFF = 25
+BAR_INCREASING = 0
+BEAR_OFF_INCREASING = 25
+BAR_DECREASING = 25
+BEAR_OFF_DECREASING = 0
 Point = Annotated[int, Field(ge=0, le=25)]
 
 Position = Annotated[dict[Point, list[Checker]], ...]
@@ -78,15 +80,28 @@ class Player(BaseModel):
 
 class CheckerMove(BaseModel):
     """Represents a single checker move in backgammon."""
-    from_point: Point  # BAR (0) when entering from bar
-    to_point: Point  # BEAR_OFF (25) when bearing off
+    from_point: Point
+    to_point: Point
     die_value: int = Field(..., ge=1, le=6)
+
+    @model_validator(mode='after')
+    def check_valid_move(self) -> Self:
+        if abs(self.from_point - self.to_point) != self.die_value:
+            raise ValueError("Invalid move")
+        return self
 
 
 class BackgammonMove(BaseModel):
     """Represents a complete move in backgammon, consisting of multiple checker moves."""
     checker_moves: List[CheckerMove] = Field(default_factory=list)
     dice: tuple[int, int] = Field(...)  # The dice roll that enables this move
+
+    # Teresa TPC
+    # def validate(self) -> bool:
+    #     if self.dice[0] == self.dice[1]:
+    #         len(self.checker_moves) == 4
+    #     else:
+    #         len(self.checker_moves) == 2
 
 
 class Game(BaseModel):
