@@ -21,7 +21,11 @@ class Die(BaseModel):
         return self.value
 
 Checker = Annotated[Color, Field(alias="checker")]
-Point = Annotated[int, Field(ge=1, le=24)]
+
+BAR = 0
+BEAR_OFF = 25
+Point = Annotated[int, Field(ge=0, le=25)]
+
 Position = Annotated[dict[Point, list[Checker]], ...]
 
 
@@ -74,8 +78,8 @@ class Player(BaseModel):
 
 class CheckerMove(BaseModel):
     """Represents a single checker move in backgammon."""
-    from_point: Point | None = None  # None when entering from bar
-    to_point: Point | None = None  # None when bearing off
+    from_point: Point  # BAR (0) when entering from bar
+    to_point: Point  # BEAR_OFF (25) when bearing off
     die_value: int = Field(..., ge=1, le=6)
 
 
