@@ -3,23 +3,13 @@ from typing import Optional, Tuple
 from pygammon.logic.models import Player, Position, Point
 
 
-# The final goal is to get a list of all the possible moves for each dice roll
-# def get_all_valid_moves(player: Player, position: Position, dice: Dice) -> List[Move]:
-#
+# TODO: The final goal is to get a list of all the possible backgammon moves for each dice roll in a given position
+# def get_all_valid_moves(player: Player, position: Position, dice: Dice) -> List[BackgammonMove]:
 
 
 def select_checker_to_play(player: Player, position: Position) -> Optional[Point]:
-    # TODO: the numbers of the points change from player to player, think about how to do that
-    # Chose the checker more far away
     """
     Select the checker that is the farthest from the player's home.
-
-    LIGHT player: moves from point 1 -> 24s
-    DARK player: moves from point 24 -> 1
-
-    So:
-    - LIGHT should check points in order: 1, 2, 3, ..., 24
-    - DARK should check points in order: 24, 23, 22, ..., 1
 
     We return the first point that contains a checker of the player's color.
     """
@@ -51,8 +41,8 @@ def checker_can_move(
     Return (True, target) if a checker on from_point can move by die_value.
     Return (False, None) when the destination is blocked.
     Beginner-friendly rules:
-      - LIGHT: target = from_point + die_value
-      - DARK:  target = from_point - die_value
+      - INCREASING: target = from_point + die_value
+      - DECREASING:  target = from_point - die_value
       - empty or same-color -> allowed
       - single opponent -> allowed (hit)
       - two or more opponent -> blocked
@@ -120,15 +110,3 @@ def move_checker(
     # otherwise just place player's checker on top
     dest.insert(0, player.color)
     return None, False
-
-
-# def move(position: Position, dice: tuple[Die, Die], player: Player) -> Position:
-#     # For each dice
-#     for die in dice:
-#         # Chose the checker more far away from the home
-#         checker_to_play = select_checker_to_play()
-#
-#         # Confirm if the checker can move to the point
-#         if checker_can_move(checker_to_play):
-#             # Move the checker
-#             move_checker(initial_point) -> final_point
