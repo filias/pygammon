@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 from pygammon.logic.models import (
     Color,
+    Direction,
     Die,
     Player,
     CheckerMove,
@@ -36,15 +37,53 @@ class TestDie:
             assert die.value == result
 
 
+class TestDirection:
+    def test_direction_increasing(self):
+        assert Direction.INCREASING == "increasing"
+
+    def test_direction_decreasing(self):
+        assert Direction.DECREASING == "decreasing"
+
+
 class TestPlayer:
-    def test_player_creation(self):
-        player = Player(name="Alice", color=Color.LIGHT)
+    def test_player_creation_light(self):
+        player = Player(name="Alice", color=Color.LIGHT, direction=Direction.INCREASING)
         assert player.name == "Alice"
         assert player.color == Color.LIGHT
+        assert player.direction == Direction.INCREASING
 
-    def test_player_dark(self):
-        player = Player(name="Bob", color=Color.DARK)
+    def test_player_creation_dark(self):
+        player = Player(name="Bob", color=Color.DARK, direction=Direction.DECREASING)
         assert player.color == Color.DARK
+        assert player.direction == Direction.DECREASING
+
+    def test_player_bar_increasing(self):
+        player = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
+        assert player.bar == BAR_INCREASING
+        assert player.bar == 0
+
+    def test_player_bar_decreasing(self):
+        player = Player(name="D", color=Color.DARK, direction=Direction.DECREASING)
+        assert player.bar == BAR_DECREASING
+        assert player.bar == 25
+
+    def test_player_bear_off_increasing(self):
+        player = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
+        assert player.bear_off == BEAR_OFF_INCREASING
+        assert player.bear_off == 25
+
+    def test_player_bear_off_decreasing(self):
+        player = Player(name="D", color=Color.DARK, direction=Direction.DECREASING)
+        assert player.bear_off == BEAR_OFF_DECREASING
+        assert player.bear_off == 0
+
+    def test_player_home_range_increasing(self):
+        player = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
+        assert list(player.home_range) == [19, 20, 21, 22, 23, 24]
+
+    def test_player_home_range_decreasing(self):
+        player = Player(name="D", color=Color.DARK, direction=Direction.DECREASING)
+        assert list(player.home_range) == [1, 2, 3, 4, 5, 6]
 
 
 class TestCheckerMove:

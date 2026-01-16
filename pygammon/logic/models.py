@@ -12,6 +12,13 @@ class Color(StrEnum):
     LIGHT = "light"
 
 
+class Direction(StrEnum):
+    """Represents the direction a player moves on the board."""
+
+    INCREASING = "increasing"  # 1 → 24 (bar=0, bear_off=25)
+    DECREASING = "decreasing"  # 24 → 1 (bar=25, bear_off=0)
+
+
 class Die(BaseModel):
     """Represents a single die with a value between 1 and 6."""
 
@@ -101,10 +108,32 @@ class Board:
 
 
 class Player(BaseModel):
-    """Represents a player with a name and assigned color."""
+    """Represents a player with a name, color, and movement direction."""
 
     name: str
     color: Color
+    direction: Direction
+
+    @property
+    def bar(self) -> int:
+        """Returns the bar point for this player's direction."""
+        return (
+            BAR_INCREASING if self.direction == Direction.INCREASING else BAR_DECREASING
+        )
+
+    @property
+    def bear_off(self) -> int:
+        """Returns the bear off point for this player's direction."""
+        return (
+            BEAR_OFF_INCREASING
+            if self.direction == Direction.INCREASING
+            else BEAR_OFF_DECREASING
+        )
+
+    @property
+    def home_range(self) -> range:
+        """Returns the home board range for this player."""
+        return range(19, 25) if self.direction == Direction.INCREASING else range(1, 7)
 
 
 class CheckerMove(BaseModel):
@@ -141,10 +170,14 @@ class Game(BaseModel):
 
     board: Board = Field(default_factory=Board)
     player1: Player = Field(
-        default_factory=lambda: Player(name="Player 1", color=Color.DARK)
+        default_factory=lambda: Player(
+            name="Player 1", color=Color.DARK, direction=Direction.DECREASING
+        )
     )
     player2: Player = Field(
-        default_factory=lambda: Player(name="Player 2", color=Color.LIGHT)
+        default_factory=lambda: Player(
+            name="Player 2", color=Color.LIGHT, direction=Direction.INCREASING
+        )
     )
     current_player: Player = Field(default=None)
     moves: dict[int, BackgammonMove] = Field(default_factory=dict)

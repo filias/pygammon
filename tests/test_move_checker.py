@@ -1,12 +1,12 @@
 import copy
 import pytest
-from pygammon.logic.models import Player, Color
+from pygammon.logic.models import Player, Color, Direction
 from pygammon.logic.position import initial_position
 from pygammon.logic.move import move_checker
 
 
 def test_normal_move_to_empty_point():
-    light = Player(name="L", color=Color.LIGHT)
+    light = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
     pos = copy.deepcopy(initial_position)
 
     opponent, borne_off = move_checker(1, 4, light, pos)
@@ -17,7 +17,7 @@ def test_normal_move_to_empty_point():
 
 
 def test_hit_single_opponent():
-    dark = Player(name="D", color=Color.DARK)
+    dark = Player(name="D", color=Color.DARK, direction=Direction.DECREASING)
     pos = copy.deepcopy(initial_position)
     pos[10] = [Color.LIGHT]  # single opponent to hit
     pos[12] = [Color.DARK]  # dark checker to move
@@ -30,7 +30,7 @@ def test_hit_single_opponent():
 
 
 def test_bear_off():
-    light = Player(name="L", color=Color.LIGHT)
+    light = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
     pos = {23: [Color.LIGHT]}
 
     opponent, borne_off = move_checker(23, 25, light, pos)
@@ -41,7 +41,7 @@ def test_bear_off():
 
 
 def test_move_nonexistent_checker_raises():
-    light = Player(name="L", color=Color.LIGHT)
+    light = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
     pos = {}
 
     with pytest.raises(ValueError):
@@ -49,7 +49,7 @@ def test_move_nonexistent_checker_raises():
 
 
 def test_move_wrong_color_checker_raises():
-    light = Player(name="L", color=Color.LIGHT)
+    light = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
     pos = {1: [Color.DARK]}
 
     with pytest.raises(ValueError):
@@ -57,7 +57,7 @@ def test_move_wrong_color_checker_raises():
 
 
 def test_move_to_same_color_stacks():
-    light = Player(name="L", color=Color.LIGHT)
+    light = Player(name="L", color=Color.LIGHT, direction=Direction.INCREASING)
     pos = {1: [Color.LIGHT], 4: [Color.LIGHT]}
 
     opponent, borne_off = move_checker(1, 4, light, pos)
