@@ -96,12 +96,12 @@ class BackgammonMove(BaseModel):
     checker_moves: List[CheckerMove] = Field(default_factory=list)
     dice: tuple[int, int] = Field(...)  # The dice roll that enables this move
 
-    # Teresa TPC
-    # def validate(self) -> bool:
-    #     if self.dice[0] == self.dice[1]:
-    #         len(self.checker_moves) == 4
-    #     else:
-    #         len(self.checker_moves) == 2
+    # Teresa TPC jan2026
+    def validate(self) -> bool:
+         if self.dice[0] == self.dice[1]:
+             return len(self.checker_moves) == 4
+         else:
+             return len(self.checker_moves) == 2
 
 
 class Game(BaseModel):
