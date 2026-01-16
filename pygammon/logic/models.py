@@ -7,18 +7,21 @@ from typing import Annotated, List, Self
 
 class Color(StrEnum):
     """Represents the two player colors in backgammon."""
+
     DARK = "dark"
     LIGHT = "light"
 
 
 class Die(BaseModel):
     """Represents a single die with a value between 1 and 6."""
+
     value: int = Field(..., ge=1, le=6)
 
     def roll(self) -> int:
         """Roll the die and return the new value."""
         self.value = secrets.randbelow(6) + 1
         return self.value
+
 
 Checker = Annotated[Color, Field(alias="checker")]
 
@@ -33,6 +36,7 @@ Position = Annotated[dict[Point, list[Checker]], ...]
 
 class Board:
     """Represents the backgammon board with checker positions, bar, and borne-off checkers."""
+
     position: Position
     bar: list[Checker]
     off_dark: list[Checker]
@@ -53,12 +57,36 @@ class Board:
     def initial_position(self) -> Position:
         position = {
             Point(1): [Checker.DARK, Checker.DARK],
-            Point(6): [Checker.LIGHT, Checker.LIGHT, Checker.LIGHT, Checker.LIGHT, Checker.LIGHT],
+            Point(6): [
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+            ],
             Point(8): [Checker.LIGHT, Checker.LIGHT, Checker.LIGHT],
-            Point(12): [Checker.DARK, Checker.DARK, Checker.DARK, Checker.DARK, Checker.DARK],
-            Point(13): [Checker.LIGHT, Checker.LIGHT, Checker.LIGHT, Checker.LIGHT, Checker.LIGHT],
+            Point(12): [
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+            ],
+            Point(13): [
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+                Checker.LIGHT,
+            ],
             Point(17): [Checker.DARK, Checker.DARK, Checker.DARK],
-            Point(19): [Checker.DARK, Checker.DARK, Checker.DARK, Checker.DARK, Checker.DARK],
+            Point(19): [
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+                Checker.DARK,
+            ],
             Point(24): [Checker.LIGHT, Checker.LIGHT],
         }
         return position
@@ -74,17 +102,19 @@ class Board:
 
 class Player(BaseModel):
     """Represents a player with a name and assigned color."""
+
     name: str
     color: Color
 
 
 class CheckerMove(BaseModel):
     """Represents a single checker move in backgammon."""
+
     from_point: Point
     to_point: Point
     die_value: int = Field(..., ge=1, le=6)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_valid_move(self) -> Self:
         if abs(self.from_point - self.to_point) != self.die_value:
             raise ValueError("Invalid move")
@@ -93,22 +123,29 @@ class CheckerMove(BaseModel):
 
 class BackgammonMove(BaseModel):
     """Represents a complete move in backgammon, consisting of multiple checker moves."""
+
     checker_moves: List[CheckerMove] = Field(default_factory=list)
     dice: tuple[int, int] = Field(...)  # The dice roll that enables this move
 
-    # Teresa TPC jan2026
-    def validate(self) -> bool:
-         if self.dice[0] == self.dice[1]:
-             return len(self.checker_moves) == 4
-         else:
-             return len(self.checker_moves) == 2
+    @model_validator(mode="after")  # Pydantic, depois da jogada ter sido iniciada
+    def validate(self) -> Self:
+        if self.dice[0] == self.dice[1] and len(self.checker_moves) != 4:
+            raise ValueError("With double 4 moves are needed")
+        if self.dice[0] != self.dice[1] and len(self.checker_moves) != 2:
+            raise ValueError("only 2 moves allowed")
+        return self
 
 
 class Game(BaseModel):
     """Represents a backgammon game with board state, players, and move history."""
+
     board: Board = Field(default_factory=Board)
-    player1: Player = Field(default_factory=lambda: Player(name="Player 1", color=Color.DARK))
-    player2: Player = Field(default_factory=lambda: Player(name="Player 2", color=Color.LIGHT))
+    player1: Player = Field(
+        default_factory=lambda: Player(name="Player 1", color=Color.DARK)
+    )
+    player2: Player = Field(
+        default_factory=lambda: Player(name="Player 2", color=Color.LIGHT)
+    )
     current_player: Player = Field(default=None)
     moves: dict[int, BackgammonMove] = Field(default_factory=dict)
 

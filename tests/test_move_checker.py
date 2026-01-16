@@ -20,7 +20,7 @@ def test_hit_single_opponent():
     dark = Player(name="D", color=Color.DARK)
     pos = copy.deepcopy(initial_position)
     pos[10] = [Color.LIGHT]  # single opponent to hit
-    pos[12] = [Color.DARK]   # dark checker to move
+    pos[12] = [Color.DARK]  # dark checker to move
 
     opponent, borne_off = move_checker(12, 10, dark, pos)
 

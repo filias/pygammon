@@ -8,9 +8,9 @@ from pygammon.logic.models import (
     BackgammonMove,
     Board,
     BAR_DECREASING,
-BAR_INCREASING,
+    BAR_INCREASING,
     BEAR_OFF_INCREASING,
-BEAR_OFF_DECREASING,
+    BEAR_OFF_DECREASING,
 )
 
 

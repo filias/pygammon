@@ -8,7 +8,6 @@ from pygammon.conf import settings
 
 
 class PygammonScene(QGraphicsScene):
-
     def __init__(self, board):
         super().__init__()
         self.board = board
@@ -22,7 +21,7 @@ class PygammonScene(QGraphicsScene):
 
         # Draw triangles (board points) (0,0 is down, left)
         for i in range(12):  # 12 points on each side
-            #print(f"Setting up triangle {i}")
+            # print(f"Setting up triangle {i}")
 
             # Setup colors
             triangle_color = _get_color(index=i)
@@ -48,7 +47,7 @@ class PygammonScene(QGraphicsScene):
             )
 
             # Draw the triangle
-            #print(f"Drawing triangle {i}")
+            # print(f"Drawing triangle {i}")
             triangle_polygon = QGraphicsPolygonItem(triangle)
             triangle_polygon.setPen(pen)  # Line color
             triangle_polygon.setBrush(triangle_color)  # Filling color
@@ -73,7 +72,7 @@ class PygammonScene(QGraphicsScene):
                 ]
             )
 
-            #print(f"Drawing mirror triangle {i}")
+            # print(f"Drawing mirror triangle {i}")
             triangle_polygon_mirror = QGraphicsPolygonItem(triangle_mirror)
             triangle_polygon_mirror.setPen(pen)  # Line color
             triangle_polygon_mirror.setBrush(
@@ -99,7 +98,7 @@ class PygammonScene(QGraphicsScene):
 
         if point_index >= 13:  # Bottom checkers
             y_checker = settings.board_height - checker_height
-        else: # Top checkers
+        else:  # Top checkers
             y_checker = checker_height - settings.checker_radius * 2
 
         return y_checker
@@ -109,18 +108,25 @@ class PygammonScene(QGraphicsScene):
             print(f"Drawing {len(checkers)} checkers at point {point_index}")
 
             # Define the checker color
-            checker_color = settings.color_dark_checker if checkers[0] == Color.DARK else settings.color_light_checker
+            checker_color = (
+                settings.color_dark_checker
+                if checkers[0] == Color.DARK
+                else settings.color_light_checker
+            )
             x_checker = self._calculate_x_checker(point_index)
 
             for checker_index in range(1, len(checkers) + 1):
                 y_checker = self._calculate_y_checker(point_index, checker_index)
 
                 # Add checkers to the scene
-                print(f"Adding checker: {x_checker}, {y_checker}, {point_index} and {checker_index}")
+                print(
+                    f"Adding checker: {x_checker}, {y_checker}, {point_index} and {checker_index}"
+                )
                 checker = MovableChecker(
                     x_checker, y_checker, settings.checker_radius * 2, checker_color
                 )
                 self.addItem(checker)
+
 
 def _get_color(index: int) -> QColor:
     print(f"Getting color: {index}")
@@ -128,6 +134,7 @@ def _get_color(index: int) -> QColor:
         return QColor(settings.color_dark_triangle)
 
     return QColor(settings.color_light_triangle)
+
 
 def _toggle_color(color: QColor) -> QColor:
     if color == QColor(settings.color_dark_triangle):

@@ -7,14 +7,8 @@ from pygammon.logic.models import Player, Position, Point
 # def get_all_valid_moves(player: Player, position: Position, dice: Dice) -> List[Move]:
 #
 
-# Teresa:
-# 1. Add type annotation
 
-def select_checker_to_play(
-        player: Player,
-        position: Position
-        ) -> Optional[Point]:
-
+def select_checker_to_play(player: Player, position: Position) -> Optional[Point]:
     # TODO: the numbers of the points change from player to player, think about how to do that
     # Chose the checker more far away
     """
@@ -29,28 +23,30 @@ def select_checker_to_play(
 
     We return the first point that contains a checker of the player's color.
     """
-    
+
     # Decide direction based on player color
-    if player.color == "light":        # Color.LIGHT
-        points_to_check = range(1, 25) # from 1 to 24
-    else:                               # Color.DARK
-        points_to_check = range(24, 0, -1) # from 24 down to 1
-    
+    if player.color == "light":  # Color.LIGHT
+        points_to_check = range(1, 25)  # from 1 to 24
+    else:  # Color.DARK
+        points_to_check = range(24, 0, -1)  # from 24 down to 1
+
     # Look for the first point that has a checker of this player
     for point in points_to_check:
-        checkers = position.get(point, [])#chave é ponto e valor lista peças = dicionário
-        if checkers != []:#se lista de peças not empty
-            if checkers[0] == player.color:#A primeira peça desta lista é da cor deste jogador?
+        checkers = position.get(
+            point, []
+        )  # chave é ponto e valor lista peças = dicionário
+        if checkers != []:  # se lista de peças not empty
+            if (
+                checkers[0] == player.color
+            ):  # A primeira peça desta lista é da cor deste jogador?
                 return point
     # If the player has no checkers on the board
     return None
 
+
 def checker_can_move(
-        from_point: Point,
-        die_value: int,
-        player: Player, 
-        position: Position
-        )-> Tuple [bool, Optional[Point]]:
+    from_point: Point, die_value: int, player: Player, position: Position
+) -> Tuple[bool, Optional[Point]]:
     """
     Return (True, target) if a checker on from_point can move by die_value.
     Return (False, None) when the destination is blocked.
@@ -84,12 +80,10 @@ def checker_can_move(
     # two or more opponent checkers -> blocked
     return False, None
 
+
 def move_checker(
-        from_point: Point,
-        to_point: Point,
-        player: Player,
-        position: Position
-        )-> Tuple[Optional[str], bool]:
+    from_point: Point, to_point: Point, player: Player, position: Position
+) -> Tuple[Optional[str], bool]:
     """
     Move a checker in the 'position' dict.
     Returns a tuple: (opponent_color_or_None, borne_off_bool)
@@ -118,7 +112,7 @@ def move_checker(
 
     # if single opponent -> hit
     if dest and dest[0] != player.color and len(dest) == 1:
-        opponent = dest.pop(0)   # remove opponent checker
+        opponent = dest.pop(0)  # remove opponent checker
         # place player's checker on top
         dest.insert(0, player.color)
         return opponent, False
@@ -126,6 +120,7 @@ def move_checker(
     # otherwise just place player's checker on top
     dest.insert(0, player.color)
     return None, False
+
 
 # def move(position: Position, dice: tuple[Die, Die], player: Player) -> Position:
 #     # For each dice
@@ -137,4 +132,3 @@ def move_checker(
 #         if checker_can_move(checker_to_play):
 #             # Move the checker
 #             move_checker(initial_point) -> final_point
-
