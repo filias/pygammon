@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QApplication, QGraphicsView
 
 from pygammon.logic.models import Game
+from pygammon.logic.dice import roll
 from pygammon.ui.board import PygammonScene
 from pygammon.conf import settings
 from pygammon.ui.window import BackgammonWindow
@@ -18,6 +19,8 @@ if __name__ == "__main__":
     bg_scene = PygammonScene(board=game.board)
     bg_scene.draw_board()
     bg_scene.draw_checkers()
+    die1, die2 = roll()
+    bg_scene.draw_dice(die1, die2)
 
     view = QGraphicsView(bg_scene)
     view.setScene(bg_scene)
