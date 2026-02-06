@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
 
 from pygammon.logic.models import Color
 from pygammon.ui.checker import MovableChecker
+from pygammon.ui.die import DieGraphic, DIE_SIZE
 from pygammon.conf import settings
 
 
@@ -102,6 +103,15 @@ class PygammonScene(QGraphicsScene):
             y_checker = checker_height - settings.checker_radius * 2
 
         return y_checker
+
+    def draw_dice(self, die1_value: int, die2_value: int):
+        bar_x = 6 * settings.point_width
+        die_x = bar_x + (settings.point_width - DIE_SIZE) / 2
+        gap = 8
+        die1_y = settings.board_height / 2 - DIE_SIZE - gap / 2
+        die2_y = settings.board_height / 2 + gap / 2
+        self.addItem(DieGraphic(die_x, die1_y, die1_value))
+        self.addItem(DieGraphic(die_x, die2_y, die2_value))
 
     def draw_checkers(self):
         for point_index, checkers in self.board.position.items():
