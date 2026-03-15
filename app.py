@@ -142,6 +142,7 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
         )
         window.roll_button.setText("Roll Dice")
         window.roll_button.setEnabled(False)
+        window.double_button.setEnabled(False)
 
 
 def _on_board_updated(scene, game, window, controller):
@@ -170,7 +171,6 @@ def _on_turn_changed(scene, window, controller, game, name, color):
     window.roll_button.setEnabled(True)
     window.confirm_button.setEnabled(False)
     window.double_button.setEnabled(controller.engine.can_double)
-    scene.clear_dice()
     _update_panel(scene, game, controller)
 
 

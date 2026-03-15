@@ -38,7 +38,6 @@ class GameController(QObject):
         if not is_tie:
             player = self.engine.current_player
             self.turn_changed.emit(player.name, player.color)
-            self.dice_rolled.emit(dark_die, light_die)
             self.board_updated.emit()
 
             if self._is_ai_turn():
