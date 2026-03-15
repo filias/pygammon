@@ -225,20 +225,28 @@ class PygammonScene(QGraphicsScene):
 
         size = settings.die_size
         gap = size * 0.4
-        # Dice go in the right half of the playing area (between bar and tray)
-        right_half_x = self._bar_x + settings.bar_width
-        right_half_w = self._tray_x - right_half_x
         dice_total_w = size * 2 + gap
-        x_start = right_half_x + (right_half_w - dice_total_w) / 2
-
         mid_y = settings.board_height / 2
+
         if player_color == Color.DARK:
+            # Dark: right half (between bar and tray), bottom
+            area_x = self._bar_x + settings.bar_width
+            area_w = self._tray_x - area_x
+            bg_color = settings.color_dark_checker
+            pip_color = settings.color_light_checker
             y = mid_y + gap
         else:
+            # Light: left half (left of bar), top
+            area_x = 0
+            area_w = self._bar_x
+            bg_color = settings.color_light_checker
+            pip_color = settings.color_dark_checker
             y = mid_y - gap - size
 
-        d1 = DieItem(x_start, y, die1)
-        d2 = DieItem(x_start + size + gap, y, die2)
+        x_start = area_x + (area_w - dice_total_w) / 2
+
+        d1 = DieItem(x_start, y, die1, bg_color=bg_color, pip_color=pip_color)
+        d2 = DieItem(x_start + size + gap, y, die2, bg_color=bg_color, pip_color=pip_color)
         self.addItem(d1)
         self.addItem(d2)
         self.dice_items.extend([d1, d2])

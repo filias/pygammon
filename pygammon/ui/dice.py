@@ -24,19 +24,19 @@ _PIP_POSITIONS = {
 class DieItem(QGraphicsItemGroup):
     """A single die graphic: rounded rectangle with pips."""
 
-    def __init__(self, x, y, value, parent=None):
+    def __init__(self, x, y, value, bg_color=None, pip_color=None, parent=None):
         super().__init__(parent)
         size = settings.die_size
         pip_radius = size * 0.09
 
         # Die body
         body = QGraphicsRectItem(x, y, size, size)
-        body.setBrush(QBrush(QColor(settings.color_die_bg)))
+        body.setBrush(QBrush(QColor(bg_color or settings.color_die_bg)))
         body.setPen(QPen(QColor("#888888"), 1.5))
         self.addToGroup(body)
 
         # Pips
-        pip_color = QColor(settings.color_die_pip)
+        pip_color = QColor(pip_color or settings.color_die_pip)
         for fx, fy in _PIP_POSITIONS.get(value, []):
             px = x + fx * size - pip_radius
             py = y + fy * size - pip_radius
