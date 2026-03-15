@@ -129,6 +129,52 @@ class TestWinDetection:
         assert engine.winner == Color.DARK
 
 
+class TestUndo:
+    @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
+    def test_undo_restores_position(self, mock_roll, engine):
+        engine.roll_dice()
+        valid = engine.get_valid_moves()
+        move = valid[0]
+
+        # Save state before move
+        pos_before = {k: list(v) for k, v in engine.board.position.items()}
+        dice_before = list(engine.remaining_dice)
+
+        engine.execute_move(*move)
+        assert engine.can_undo
+
+        engine.undo_move()
+        assert engine.board.position == pos_before
+        assert engine.remaining_dice == dice_before
+
+    @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
+    def test_undo_restores_phase(self, mock_roll, engine):
+        engine.roll_dice()
+        valid = engine.get_valid_moves()
+        engine.execute_move(*valid[0])
+        engine.undo_move()
+        assert engine.phase == GamePhase.MOVING
+
+    def test_cannot_undo_without_moves(self, engine):
+        assert not engine.can_undo
+        assert engine.undo_move() is False
+
+    @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
+    def test_undo_stack_cleared_on_end_turn(self, mock_roll, engine):
+        engine.roll_dice()
+        valid = engine.get_valid_moves()
+        for m in valid:
+            if engine.phase != GamePhase.MOVING:
+                break
+            try:
+                engine.execute_move(*m)
+            except ValueError:
+                continue
+        if engine.phase == GamePhase.TURN_COMPLETE:
+            engine.end_turn()
+            assert not engine.can_undo
+
+
 class TestIllegalMoves:
     @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
     def test_illegal_move_rejected(self, mock_roll, engine):

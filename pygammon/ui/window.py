@@ -51,6 +51,12 @@ class BackgammonWindow(QMainWindow):
         self.roll_button.setStyleSheet("font-size: 14px; padding: 8px 16px;")
         self.roll_button.setEnabled(False)
         controls.addWidget(self.roll_button)
+
+        self.undo_button = QPushButton("Undo")
+        self.undo_button.setStyleSheet("font-size: 14px; padding: 8px 16px;")
+        self.undo_button.setEnabled(False)
+        controls.addWidget(self.undo_button)
+
         controls.addStretch()
         self.main_layout.addLayout(controls)
 

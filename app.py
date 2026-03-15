@@ -22,7 +22,7 @@ def create_game(window: BackgammonWindow, ai_player=None, ai_color=None):
     window.set_scene(scene)
 
     # Connect signals
-    controller.board_updated.connect(lambda: _on_board_updated(scene, game, window))
+    controller.board_updated.connect(lambda: _on_board_updated(scene, game, window, controller))
     controller.dice_rolled.connect(
         lambda d1, d2: (window.update_dice_label(d1, d2), window.roll_button.setEnabled(False))
     )
@@ -40,13 +40,15 @@ def create_game(window: BackgammonWindow, ai_player=None, ai_color=None):
     # Connect UI controls
     window.roll_button.clicked.connect(controller.on_roll_clicked)
     window.roll_button.setEnabled(True)
+    window.undo_button.clicked.connect(controller.on_undo_clicked)
 
     controller.start_game()
 
 
-def _on_board_updated(scene, game, window):
+def _on_board_updated(scene, game, window, controller):
     scene.refresh_board()
     window.update_off_counts(len(game.board.off_dark), len(game.board.off_light))
+    window.undo_button.setEnabled(controller.engine.can_undo)
 
 
 def _on_turn_changed(window, name, color):

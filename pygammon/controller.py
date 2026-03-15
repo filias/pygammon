@@ -93,6 +93,15 @@ class GameController(QObject):
                 valid = self.engine.get_valid_moves()
                 self.valid_moves_changed.emit(valid)
 
+    def on_undo_clicked(self):
+        if not self.engine.can_undo:
+            return
+        self.engine.undo_move()
+        self.selected_point = None
+        self.board_updated.emit()
+        valid = self.engine.get_valid_moves()
+        self.valid_moves_changed.emit(valid)
+
     def _finish_turn(self):
         self.engine.end_turn()
         self.selected_point = None

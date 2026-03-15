@@ -15,6 +15,18 @@ class GamePhase(StrEnum):
     GAME_OVER = "game_over"
 
 
+class _Snapshot:
+    """Snapshot of board state before a move, for undo."""
+
+    def __init__(self, position, bar, off_dark, off_light, remaining_dice, phase):
+        self.position = position
+        self.bar = bar
+        self.off_dark = off_dark
+        self.off_light = off_light
+        self.remaining_dice = remaining_dice
+        self.phase = phase
+
+
 class GameEngine:
     """State machine that orchestrates a backgammon game."""
 
@@ -23,6 +35,7 @@ class GameEngine:
         self.phase = GamePhase.NOT_STARTED
         self.remaining_dice: List[int] = []
         self.move_count = 0
+        self._undo_stack: List[_Snapshot] = []
 
     @property
     def current_player(self) -> Player:
@@ -85,6 +98,16 @@ class GameEngine:
                 f"Illegal move: ({from_point}, {to_point}, {die_value})"
             )
 
+        # Save snapshot for undo
+        self._undo_stack.append(_Snapshot(
+            position={k: list(v) for k, v in self.board.position.items()},
+            bar=list(self.board.bar),
+            off_dark=list(self.board.off_dark),
+            off_light=list(self.board.off_light),
+            remaining_dice=list(self.remaining_dice),
+            phase=self.phase,
+        ))
+
         player = self.current_player
 
         # Handle bar entry: remove checker from bar
@@ -123,6 +146,24 @@ class GameEngine:
             self.phase = GamePhase.TURN_COMPLETE
         # Otherwise stay in MOVING phase
 
+    def undo_move(self) -> bool:
+        """Undo the last move. Returns True if successful."""
+        if not self._undo_stack:
+            return False
+        snapshot = self._undo_stack.pop()
+        self.board.position = snapshot.position
+        self.board.bar = snapshot.bar
+        self.board.off_dark = snapshot.off_dark
+        self.board.off_light = snapshot.off_light
+        self.remaining_dice = snapshot.remaining_dice
+        self.phase = snapshot.phase
+        self.move_count -= 1
+        return True
+
+    @property
+    def can_undo(self) -> bool:
+        return len(self._undo_stack) > 0
+
     def end_turn(self):
         """Switch to the other player and start their rolling phase."""
         if self.phase != GamePhase.TURN_COMPLETE:
@@ -132,6 +173,7 @@ class GameEngine:
         self.game.current_player_index = 1 - self.game.current_player_index
         self.game.current_player = self.current_player
         self.remaining_dice = []
+        self._undo_stack.clear()
         self.phase = GamePhase.ROLLING
 
     @property
