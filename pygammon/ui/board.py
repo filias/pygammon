@@ -1,4 +1,4 @@
-from PySide6.QtCore import QPointF
+from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QPolygonF, QPen, QBrush
 from PySide6.QtWidgets import (
     QGraphicsScene,
@@ -174,7 +174,7 @@ class PygammonScene(QGraphicsScene):
             highlight = QGraphicsEllipseItem(x, y_center - r, r * 2, r * 2)
             highlight.setBrush(QBrush(QColor(settings.color_highlight_dest)))
             highlight.setOpacity(0.4)
-            highlight.setAcceptedMouseButtons(0)  # Click-through
+            highlight.setAcceptedMouseButtons(Qt.MouseButton.NoButton)  # Click-through
             self.addItem(highlight)
             self.highlight_items.append(highlight)
 
