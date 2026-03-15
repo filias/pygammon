@@ -12,6 +12,7 @@ class GameController(QObject):
     valid_moves_changed = Signal(list)  # list of (from, to, die) tuples
     game_over = Signal(str)  # winner color
     no_moves_available = Signal()
+    turn_complete = Signal()  # all dice used, waiting for confirm
 
     def __init__(self, engine: GameEngine, ai_player=None, ai_color=None, parent=None):
         super().__init__(parent)
@@ -41,17 +42,20 @@ class GameController(QObject):
         self.dice_rolled.emit(die1, die2)
 
         if self.engine.phase == GamePhase.TURN_COMPLETE:
+            # No valid moves at all — auto-skip
             self.no_moves_available.emit()
             self._finish_turn()
             return
 
-        valid = self.engine.get_valid_moves()
-        self.valid_moves_changed.emit(valid)
         self.board_updated.emit()
 
         # AI auto-move
         if self._is_ai_turn():
             self._ai_play_moves()
+            return
+
+        valid = self.engine.get_valid_moves()
+        self.valid_moves_changed.emit(valid)
 
     def on_point_clicked(self, point_index: int):
         if self.engine.phase != GamePhase.MOVING:
@@ -82,7 +86,7 @@ class GameController(QObject):
                 if self.engine.phase == GamePhase.GAME_OVER:
                     self.game_over.emit(str(self.engine.winner))
                 elif self.engine.phase == GamePhase.TURN_COMPLETE:
-                    self._finish_turn()
+                    self.turn_complete.emit()
                 else:
                     # Still moving — show new valid moves
                     valid = self.engine.get_valid_moves()
@@ -92,6 +96,11 @@ class GameController(QObject):
                 self.selected_point = None
                 valid = self.engine.get_valid_moves()
                 self.valid_moves_changed.emit(valid)
+
+    def on_confirm_clicked(self):
+        if self.engine.phase != GamePhase.TURN_COMPLETE:
+            return
+        self._finish_turn()
 
     def on_undo_clicked(self):
         if not self.engine.can_undo:

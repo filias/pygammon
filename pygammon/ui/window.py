@@ -57,6 +57,11 @@ class BackgammonWindow(QMainWindow):
         self.undo_button.setEnabled(False)
         controls.addWidget(self.undo_button)
 
+        self.confirm_button = QPushButton("Confirm")
+        self.confirm_button.setStyleSheet("font-size: 14px; padding: 8px 16px;")
+        self.confirm_button.setEnabled(False)
+        controls.addWidget(self.confirm_button)
+
         controls.addStretch()
         self.main_layout.addLayout(controls)
 

@@ -36,25 +36,37 @@ def create_game(window: BackgammonWindow, ai_player=None, ai_color=None):
     controller.no_moves_available.connect(
         lambda: window.dice_label.setText("No moves available!")
     )
+    controller.turn_complete.connect(
+        lambda: _on_turn_complete(window)
+    )
 
     # Connect UI controls
     window.roll_button.clicked.connect(controller.on_roll_clicked)
     window.roll_button.setEnabled(True)
     window.undo_button.clicked.connect(controller.on_undo_clicked)
+    window.confirm_button.clicked.connect(controller.on_confirm_clicked)
 
     controller.start_game()
 
 
 def _on_board_updated(scene, game, window, controller):
+    from pygammon.logic.game_engine import GamePhase
+
     scene.refresh_board()
     window.update_off_counts(len(game.board.off_dark), len(game.board.off_light))
     window.undo_button.setEnabled(controller.engine.can_undo)
+    window.confirm_button.setEnabled(controller.engine.phase == GamePhase.TURN_COMPLETE)
+
+
+def _on_turn_complete(window):
+    window.confirm_button.setEnabled(True)
 
 
 def _on_turn_changed(window, name, color):
     window.update_player_label(name, color)
     window.dice_label.setText("")
     window.roll_button.setEnabled(True)
+    window.confirm_button.setEnabled(False)
 
 
 def _on_valid_moves(scene, moves, controller):
