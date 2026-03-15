@@ -12,3 +12,6 @@ dependencies = [
     "pytest>=9.0.2",
     "ruff>=0.7.3",
 ]
+
+[project.optional-dependencies]
+ai = ["tensorflow>=2.15", "numpy>=1.24"]

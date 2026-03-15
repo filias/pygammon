@@ -1,29 +1,32 @@
 from PySide6.QtCore import QPointF
-from PySide6.QtGui import QColor, QPolygonF, QPen
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsPolygonItem
+from PySide6.QtGui import QColor, QPolygonF, QPen, QBrush
+from PySide6.QtWidgets import (
+    QGraphicsScene,
+    QGraphicsPolygonItem,
+    QGraphicsEllipseItem,
+    QGraphicsTextItem,
+)
 
 from pygammon.logic.models import Color
-from pygammon.ui.checker import MovableChecker
+from pygammon.ui.checker import CheckerItem
 from pygammon.conf import settings
 
 
 class PygammonScene(QGraphicsScene):
-    def __init__(self, board):
+    def __init__(self, board, controller=None):
         super().__init__()
         self.board = board
+        self.controller = controller
+        self.checker_items = []
+        self.highlight_items = []
+        self.bar_items = []
         self.setSceneRect(0, 0, settings.board_width, settings.board_height)
 
     def draw_board(self):
         self.setBackgroundBrush(QColor(settings.color_board))
-        self.setSceneRect(
-            0, 0, settings.board_width, settings.board_height
-        )  # Scene size
+        self.setSceneRect(0, 0, settings.board_width, settings.board_height)
 
-        # Draw triangles (board points) (0,0 is down, left)
-        for i in range(12):  # 12 points on each side
-            # print(f"Setting up triangle {i}")
-
-            # Setup colors
+        for i in range(12):
             triangle_color = _get_color(index=i)
             pen = QPen(triangle_color)
 
@@ -31,29 +34,20 @@ class PygammonScene(QGraphicsScene):
             if i >= 6:
                 x_start += settings.point_width
 
-            # Triangle points
+            # Top triangles
             base_left = QPointF(x_start, 0)
             top_middle = QPointF(
                 x_start + settings.point_width / 2, settings.point_height
             )
             base_right = QPointF(x_start + settings.point_width, 0)
 
-            triangle = QPolygonF(
-                [
-                    base_left,
-                    top_middle,
-                    base_right,
-                ]
-            )
-
-            # Draw the triangle
-            # print(f"Drawing triangle {i}")
+            triangle = QPolygonF([base_left, top_middle, base_right])
             triangle_polygon = QGraphicsPolygonItem(triangle)
-            triangle_polygon.setPen(pen)  # Line color
-            triangle_polygon.setBrush(triangle_color)  # Filling color
+            triangle_polygon.setPen(pen)
+            triangle_polygon.setBrush(triangle_color)
             self.addItem(triangle_polygon)
 
-            # Triangle mirror for the other side of the board and change color
+            # Bottom (mirror) triangles
             mirror_triangle_color = _toggle_color(color=triangle_color)
             pen = QPen(mirror_triangle_color)
 
@@ -62,33 +56,25 @@ class PygammonScene(QGraphicsScene):
                 x_start + settings.point_width / 2,
                 settings.board_height - settings.point_height,
             )
-            base_right = QPointF(x_start + settings.point_width, settings.board_height)
-
-            triangle_mirror = QPolygonF(
-                [
-                    base_left,
-                    top_middle,
-                    base_right,
-                ]
+            base_right = QPointF(
+                x_start + settings.point_width, settings.board_height
             )
 
-            # print(f"Drawing mirror triangle {i}")
+            triangle_mirror = QPolygonF([base_left, top_middle, base_right])
             triangle_polygon_mirror = QGraphicsPolygonItem(triangle_mirror)
-            triangle_polygon_mirror.setPen(pen)  # Line color
-            triangle_polygon_mirror.setBrush(
-                QColor(mirror_triangle_color)
-            )  # Filling color
+            triangle_polygon_mirror.setPen(pen)
+            triangle_polygon_mirror.setBrush(QColor(mirror_triangle_color))
             self.addItem(triangle_polygon_mirror)
 
     def _calculate_x_checker(self, point_index: int) -> float:
-        if point_index >= 13:  # Bottom checkers
+        if point_index >= 13:
             point_index = 25 - point_index
 
-        x_point = (point_index - 1) * settings.point_width  # Closer to 0
+        x_point = (point_index - 1) * settings.point_width
         x_middle_of_point = settings.point_width / 2
         x_checker = x_point + x_middle_of_point - settings.checker_radius
 
-        if point_index > 6:  # Compensate for the bar
+        if point_index > 6:
             x_checker += settings.point_width
 
         return x_checker
@@ -96,18 +82,22 @@ class PygammonScene(QGraphicsScene):
     def _calculate_y_checker(self, point_index, checker_index: int) -> float:
         checker_height = checker_index * settings.checker_radius * 2
 
-        if point_index >= 13:  # Bottom checkers
+        if point_index >= 13:
             y_checker = settings.board_height - checker_height
-        else:  # Top checkers
+        else:
             y_checker = checker_height - settings.checker_radius * 2
 
         return y_checker
 
     def draw_checkers(self):
-        for point_index, checkers in self.board.position.items():
-            print(f"Drawing {len(checkers)} checkers at point {point_index}")
+        for item in self.checker_items:
+            self.removeItem(item)
+        self.checker_items.clear()
 
-            # Define the checker color
+        for point_index, checkers in self.board.position.items():
+            if not checkers:
+                continue
+
             checker_color = (
                 settings.color_dark_checker
                 if checkers[0] == Color.DARK
@@ -118,26 +108,93 @@ class PygammonScene(QGraphicsScene):
             for checker_index in range(1, len(checkers) + 1):
                 y_checker = self._calculate_y_checker(point_index, checker_index)
 
-                # Add checkers to the scene
-                print(
-                    f"Adding checker: {x_checker}, {y_checker}, {point_index} and {checker_index}"
-                )
-                checker = MovableChecker(
-                    x_checker, y_checker, settings.checker_radius * 2, checker_color
+                checker = CheckerItem(
+                    x_checker,
+                    y_checker,
+                    settings.checker_radius * 2,
+                    QColor(checker_color),
+                    point_index,
                 )
                 self.addItem(checker)
+                self.checker_items.append(checker)
+
+        # Draw bar checkers
+        self._draw_bar_checkers()
+
+    def _draw_bar_checkers(self):
+        for item in self.bar_items:
+            self.removeItem(item)
+        self.bar_items.clear()
+
+        bar_x = settings.point_width * 6  # Middle of board
+        dark_count = 0
+        light_count = 0
+
+        for checker_color_val in self.board.bar:
+            if checker_color_val == Color.DARK:
+                dark_count += 1
+                color = settings.color_dark_checker
+                y = settings.board_height / 2 - dark_count * settings.checker_radius * 2
+            else:
+                light_count += 1
+                color = settings.color_light_checker
+                y = settings.board_height / 2 + (light_count - 1) * settings.checker_radius * 2
+
+            item = CheckerItem(
+                bar_x,
+                y,
+                settings.checker_radius * 2,
+                QColor(color),
+                point_index=25 if checker_color_val == Color.DARK else 0,
+            )
+            self.addItem(item)
+            self.bar_items.append(item)
+
+    def refresh_board(self):
+        self.clear_highlights()
+        self.draw_checkers()
+
+    def highlight_valid_sources(self, valid_moves):
+        self.clear_highlights()
+        source_points = set(m[0] for m in valid_moves)
+        for checker in self.checker_items:
+            if checker.point_index in source_points:
+                checker.set_highlighted(True)
+
+    def highlight_valid_destinations(self, moves):
+        self.clear_highlights()
+        for m in moves:
+            dest = m[1]
+            if dest < 1 or dest > 24:
+                continue
+            x = self._calculate_x_checker(dest)
+            y_center = settings.point_height if dest <= 12 else settings.board_height - settings.point_height
+            r = settings.checker_radius
+            highlight = QGraphicsEllipseItem(x, y_center - r, r * 2, r * 2)
+            highlight.setBrush(QBrush(QColor(settings.color_highlight_dest)))
+            highlight.setOpacity(0.4)
+            self.addItem(highlight)
+            self.highlight_items.append(highlight)
+
+    def clear_highlights(self):
+        for item in self.highlight_items:
+            self.removeItem(item)
+        self.highlight_items.clear()
+        for checker in self.checker_items:
+            checker.set_highlighted(False)
+
+    def on_checker_clicked(self, point_index: int):
+        if self.controller:
+            self.controller.on_point_clicked(point_index)
 
 
 def _get_color(index: int) -> QColor:
-    print(f"Getting color: {index}")
     if index % 2 == 0:
         return QColor(settings.color_dark_triangle)
-
     return QColor(settings.color_light_triangle)
 
 
 def _toggle_color(color: QColor) -> QColor:
     if color == QColor(settings.color_dark_triangle):
         return QColor(settings.color_light_triangle)
-
     return QColor(settings.color_dark_triangle)

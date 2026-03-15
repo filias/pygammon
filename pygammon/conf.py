@@ -27,6 +27,9 @@ class PygammonConfig(BaseSettings):
     color_board: HexColor = "#3e72d8"
     color_dark_checker: HexColor = "#2e2da2"
     color_light_checker: HexColor = "#d2d8f2"
+    color_highlight_source: HexColor = "#ffff00"
+    color_highlight_dest: HexColor = "#00ff00"
+    color_selected: HexColor = "#ff8800"
 
 
 settings = PygammonConfig()

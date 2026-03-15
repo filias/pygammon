@@ -1,20 +1,25 @@
 from PySide6.QtWidgets import QGraphicsEllipseItem
-from PySide6.QtGui import QBrush, QMouseEvent, QPen
+from PySide6.QtGui import QBrush, QColor, QMouseEvent, QPen
+
+from pygammon.conf import settings
 
 
-class MovableChecker(QGraphicsEllipseItem):
-    def __init__(self, x, y, radius, color):
+class CheckerItem(QGraphicsEllipseItem):
+    def __init__(self, x, y, radius, color, point_index: int):
         super().__init__(x, y, radius, radius)
+        self.point_index = point_index
+        self.base_color = color
         self.setBrush(QBrush(color))
         self.setPen(QPen(color))
-        self.setFlag(QGraphicsEllipseItem.ItemIsMovable)  # Enable movement
-        self.setFlag(QGraphicsEllipseItem.ItemIsSelectable)  # Optional: Selectable
-        self.setFlag(QGraphicsEllipseItem.ItemSendsGeometryChanges)  # Update on move
+
+    def set_highlighted(self, highlighted: bool):
+        if highlighted:
+            self.setPen(QPen(QColor(settings.color_selected), 3))
+        else:
+            self.setPen(QPen(self.base_color))
 
     def mousePressEvent(self, event: QMouseEvent):
-        super().mousePressEvent(event)  # Call parent method
-        print(f"Checker clicked at: {self.scenePos()}")  # Debugging
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        super().mouseReleaseEvent(event)
-        print(f"Checker released at: {self.scenePos()}")
+        super().mousePressEvent(event)
+        scene = self.scene()
+        if scene and hasattr(scene, "on_checker_clicked"):
+            scene.on_checker_clicked(self.point_index)

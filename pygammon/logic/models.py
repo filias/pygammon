@@ -158,10 +158,9 @@ class BackgammonMove(BaseModel):
 
     @model_validator(mode="after")  # Pydantic, depois da jogada ter sido iniciada
     def validate(self) -> Self:
-        if self.dice[0] == self.dice[1] and len(self.checker_moves) != 4:
-            raise ValueError("With double 4 moves are needed")
-        if self.dice[0] != self.dice[1] and len(self.checker_moves) != 2:
-            raise ValueError("only 2 moves allowed")
+        max_moves = 4 if self.dice[0] == self.dice[1] else 2
+        if len(self.checker_moves) > max_moves:
+            raise ValueError(f"At most {max_moves} moves allowed")
         return self
 
 
@@ -180,6 +179,8 @@ class Game(BaseModel):
         )
     )
     current_player: Player = Field(default=None)
+    current_player_index: int = Field(default=0)
+    dice: tuple[int, int] | None = Field(default=None)
     moves: dict[int, BackgammonMove] = Field(default_factory=dict)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

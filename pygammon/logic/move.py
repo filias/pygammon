@@ -1,10 +1,6 @@
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
-from pygammon.logic.models import Player, Position, Point
-
-
-# TODO: The final goal is to get a list of all the possible backgammon moves for each dice roll in a given position
-# def get_all_valid_moves(player: Player, position: Position, dice: Dice) -> List[BackgammonMove]:
+from pygammon.logic.models import Board, Color, Direction, Player, Position, Point
 
 
 def select_checker_to_play(player: Player, position: Position) -> Optional[Point]:
@@ -110,3 +106,94 @@ def move_checker(
     # otherwise just place player's checker on top
     dest.insert(0, player.color)
     return None, False
+
+
+def all_checkers_in_home(player: Player, position: Position, bar: list) -> bool:
+    """Check if all of a player's checkers are in their home board (or borne off)."""
+    # If player has checkers on the bar, not all in home
+    if any(c == player.color for c in bar):
+        return False
+
+    for point, checkers in position.items():
+        if not checkers or checkers[0] != player.color:
+            continue
+        if point not in player.home_range:
+            return False
+    return True
+
+
+def get_valid_moves(
+    player: Player, position: Position, remaining_dice: List[int], bar: list
+) -> List[Tuple[int, int, int]]:
+    """
+    Returns all legal (from_point, to_point, die_value) tuples for the current state.
+
+    Enforces:
+    - Bar-first rule: if player has checkers on bar, must enter them first
+    - Bearing off: only when all checkers are in home board
+    - Blocking: can't land on 2+ opponent checkers
+    """
+    moves = []
+    unique_dice = set(remaining_dice)
+    has_checker_on_bar = any(c == player.color for c in bar)
+
+    for die_value in unique_dice:
+        if has_checker_on_bar:
+            # Must enter from bar first
+            from_point = player.bar
+            can_move, target = checker_can_move(from_point, die_value, player, position)
+            if can_move and target is not None and 1 <= target <= 24:
+                moves.append((from_point, target, die_value))
+        else:
+            # Normal moves from board points
+            can_bear_off = all_checkers_in_home(player, position, bar)
+
+            for point, checkers in position.items():
+                if not checkers or checkers[0] != player.color:
+                    continue
+                if point < 1 or point > 24:
+                    continue
+
+                can_move, target = checker_can_move(point, die_value, player, position)
+                if not can_move or target is None:
+                    continue
+
+                if 1 <= target <= 24:
+                    moves.append((point, target, die_value))
+                elif can_bear_off:
+                    # Bearing off — exact or overshoot from highest point
+                    if _is_valid_bear_off(point, die_value, player, position):
+                        moves.append((point, player.bear_off, die_value))
+
+    return moves
+
+
+def _is_valid_bear_off(
+    from_point: int, die_value: int, player: Player, position: Position
+) -> bool:
+    """
+    Check if bearing off from this point with this die is valid.
+    Exact rolls always work. Overshooting only works if no checker is
+    farther from bearing off than from_point.
+    """
+    if player.direction == Direction.INCREASING:
+        exact_target = from_point + die_value
+        if exact_target == 25:
+            return True  # Exact bear-off
+        if exact_target > 25:
+            # Only valid if no checker is on a lower point in home
+            for p in range(19, from_point):
+                if position.get(p, []) and position[p][0] == player.color:
+                    return False
+            return True
+    else:
+        exact_target = from_point - die_value
+        if exact_target == 0:
+            return True  # Exact bear-off
+        if exact_target < 0:
+            # Only valid if no checker is on a higher point in home
+            for p in range(from_point + 1, 7):
+                if position.get(p, []) and position[p][0] == player.color:
+                    return False
+            return True
+    return False
