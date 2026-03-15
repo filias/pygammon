@@ -9,6 +9,7 @@ from pygammon.logic.position import WinType, get_win_type, has_winner
 
 class GamePhase(StrEnum):
     NOT_STARTED = "not_started"
+    OPENING_ROLL = "opening_roll"
     ROLLING = "rolling"
     DOUBLING = "doubling"
     MOVING = "moving"
@@ -60,10 +61,43 @@ class GameEngine:
         return self.game.cube
 
     def start_game(self):
-        """Start the game — first player begins rolling."""
-        self.game.current_player_index = 0
-        self.game.current_player = self.game.player1
-        self.phase = GamePhase.ROLLING
+        """Start the game with an opening roll."""
+        self.phase = GamePhase.OPENING_ROLL
+
+    def opening_roll(self) -> Tuple[int, int, bool]:
+        """
+        Both players roll one die. Returns (dark_die, light_die, is_tie).
+        If not tied, sets the starting player and their dice, transitions to MOVING.
+        If tied, stays in OPENING_ROLL for a re-roll.
+        """
+        if self.phase != GamePhase.OPENING_ROLL:
+            raise ValueError(f"Cannot do opening roll in phase {self.phase}")
+
+        import secrets
+        dark_die = secrets.randbelow(6) + 1
+        light_die = secrets.randbelow(6) + 1
+
+        if dark_die == light_die:
+            return dark_die, light_die, True
+
+        if dark_die > light_die:
+            self.game.current_player_index = 0
+            self.game.current_player = self.game.player1
+        else:
+            self.game.current_player_index = 1
+            self.game.current_player = self.game.player2
+
+        # Use both dice as the opening move
+        self.game.dice = (dark_die, light_die)
+        self.remaining_dice = [dark_die, light_die]
+
+        valid = self.get_valid_moves()
+        if valid:
+            self.phase = GamePhase.MOVING
+        else:
+            self.phase = GamePhase.TURN_COMPLETE
+
+        return dark_die, light_die, False
 
     # --- Doubling cube ---
 

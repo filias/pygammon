@@ -17,6 +17,9 @@ class BackgammonAPI:
         game = Game()
         self.engine = GameEngine(game)
         self.engine.start_game()
+        # Do opening roll (re-roll on ties)
+        while self.engine.phase == GamePhase.OPENING_ROLL:
+            self.engine.opening_roll()
         return self.get_state()
 
     def get_state(self) -> dict:

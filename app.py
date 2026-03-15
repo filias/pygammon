@@ -72,25 +72,76 @@ def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_col
             pass
 
     # Connect UI controls
-    window.roll_button.clicked.connect(controller.on_roll_clicked)
+    def _on_roll_button():
+        if controller.engine.phase == GamePhase.OPENING_ROLL:
+            controller.on_opening_roll()
+        else:
+            controller.on_roll_clicked()
+
+    window.roll_button.clicked.connect(_on_roll_button)
     window.roll_button.setEnabled(True)
+    window.roll_button.setText("Opening Roll")
     window.undo_button.clicked.connect(controller.on_undo_clicked)
     window.confirm_button.clicked.connect(controller.on_confirm_clicked)
     window.double_button.clicked.connect(controller.on_double_clicked)
+
+    controller.opening_rolled.connect(
+        lambda d, l, tie: _on_opening_rolled(scene, window, controller, d, l, tie)
+    )
 
     controller.start_game()
     _update_panel(scene, game, controller)
 
 
 def _update_panel(scene, game, controller):
+    current_color = None
+    if controller.engine.phase != GamePhase.OPENING_ROLL:
+        current_color = controller.engine.current_player.color
     scene.draw_panel(
         dark_name=game.player1.name,
         light_name=game.player2.name,
         dark_score=_match_state["scores"][Color.DARK],
         light_score=_match_state["scores"][Color.LIGHT],
         match_length=_match_state["match_length"],
-        current_color=controller.engine.current_player.color,
+        current_color=current_color,
     )
+
+
+def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
+    scene.clear_dice()
+    from pygammon.ui.dice import DieItem
+    from pygammon.conf import settings as s
+    size = s.die_size
+    gap = size * 0.4
+    _PX = s.panel_width
+    mid_y = s.board_height / 2
+
+    # Dark's die — right half, bottom
+    right_x = scene._bar_x + s.bar_width
+    right_w = scene._tray_x - right_x
+    dx = right_x + (right_w - size) / 2
+    d1 = DieItem(dx, mid_y + gap, dark_die,
+                 bg_color=s.color_dark_checker, pip_color=s.color_light_checker)
+    scene.addItem(d1)
+    scene.dice_items.append(d1)
+
+    # Light's die — left half, top
+    left_w = scene._bar_x - _PX
+    lx = _PX + (left_w - size) / 2
+    d2 = DieItem(lx, mid_y - gap - size, light_die,
+                 bg_color=s.color_light_checker, pip_color=s.color_dark_checker)
+    scene.addItem(d2)
+    scene.dice_items.append(d2)
+
+    if is_tie:
+        window.dice_label.setText(f"Tie! Both rolled {dark_die}. Roll again.")
+    else:
+        winner = "Dark" if dark_die > light_die else "Light"
+        window.dice_label.setText(
+            f"Dark: {dark_die}, Light: {light_die} — {winner} starts!"
+        )
+        window.roll_button.setText("Roll Dice")
+        window.roll_button.setEnabled(False)
 
 
 def _on_board_updated(scene, game, window, controller):

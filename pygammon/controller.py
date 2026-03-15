@@ -15,6 +15,7 @@ class GameController(QObject):
     turn_complete = Signal()  # all dice used, waiting for confirm
     double_proposed = Signal(str)  # proposer name
     cube_updated = Signal(int, object)  # value, owner (Color or None)
+    opening_rolled = Signal(int, int, bool)  # dark_die, light_die, is_tie
 
     def __init__(self, engine: GameEngine, ai_player=None, ai_color=None, parent=None):
         super().__init__(parent)
@@ -25,10 +26,26 @@ class GameController(QObject):
 
     def start_game(self):
         self.engine.start_game()
-        player = self.engine.current_player
-        self.turn_changed.emit(player.name, player.color)
         self.cube_updated.emit(self.engine.cube.value, self.engine.cube.owner)
         self.board_updated.emit()
+
+    def on_opening_roll(self):
+        if self.engine.phase != GamePhase.OPENING_ROLL:
+            return
+        dark_die, light_die, is_tie = self.engine.opening_roll()
+        self.opening_rolled.emit(dark_die, light_die, is_tie)
+
+        if not is_tie:
+            player = self.engine.current_player
+            self.turn_changed.emit(player.name, player.color)
+            self.dice_rolled.emit(dark_die, light_die)
+            self.board_updated.emit()
+
+            if self._is_ai_turn():
+                self._ai_play_moves()
+            else:
+                valid = self.engine.get_valid_moves()
+                self.valid_moves_changed.emit(valid)
 
     def _is_ai_turn(self) -> bool:
         return (
