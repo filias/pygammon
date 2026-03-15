@@ -53,10 +53,14 @@ Options:
 - `--resume checkpoints/td_gammon_ep1000` — continue from a checkpoint
 - `--logdir logs` — TensorBoard log directory
 
-### Monitor training
+### Monitor training (optional)
+[TensorBoard](https://www.tensorflow.org/tensorboard) is a web dashboard that visualizes training progress — it plots graphs like win rate and moves per game over time. It's installed with `uv sync --extra ai` but is not required; the console already prints stats every 10 episodes.
+
+To use it:
 ```bash
 uv run tensorboard --logdir logs
 ```
+Then open http://localhost:6006 in your browser.
 
 ### Play against the AI
 Run the game and go to **Game → Play vs AI**, then select a checkpoint file from the `checkpoints/` directory.
