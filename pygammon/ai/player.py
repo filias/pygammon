@@ -1,8 +1,5 @@
 """AI player that uses a trained TD-Gammon model to select moves."""
 
-import copy
-
-import numpy as np
 import tensorflow as tf
 
 from pygammon.ai.model import TDGammonModel
