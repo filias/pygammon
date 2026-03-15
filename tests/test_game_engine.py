@@ -175,6 +175,72 @@ class TestUndo:
             assert not engine.can_undo
 
 
+class TestDoublingCube:
+    def test_can_double_at_start(self, engine):
+        assert engine.can_double is True
+
+    def test_cannot_double_after_rolling(self, engine):
+        engine.roll_dice()
+        assert engine.can_double is False
+
+    def test_propose_double(self, engine):
+        engine.propose_double()
+        assert engine.phase == GamePhase.DOUBLING
+
+    def test_accept_double(self, engine):
+        engine.propose_double()
+        engine.respond_to_double(True)
+        assert engine.cube.value == 2
+        assert engine.cube.owner == Color.LIGHT  # opponent owns it
+        assert engine.phase == GamePhase.ROLLING
+
+    def test_decline_double(self, engine):
+        engine.propose_double()
+        engine.respond_to_double(False)
+        assert engine.phase == GamePhase.GAME_OVER
+        assert engine.winner == Color.DARK
+
+    def test_only_cube_owner_can_double(self, engine):
+        # Double and accept — light now owns cube
+        engine.propose_double()
+        engine.respond_to_double(True)
+        # Dark (current player) cannot double since light owns cube
+        assert engine.can_double is False
+
+    @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
+    def test_cube_owner_can_redouble(self, mock_roll, engine):
+        # Dark doubles, light accepts (light owns cube at 2)
+        engine.propose_double()
+        engine.respond_to_double(True)
+        # Dark rolls and plays
+        engine.roll_dice()
+        valid = engine.get_valid_moves()
+        for m in valid:
+            if engine.phase != GamePhase.MOVING:
+                break
+            try:
+                engine.execute_move(*m)
+            except ValueError:
+                continue
+        if engine.phase == GamePhase.TURN_COMPLETE:
+            engine.end_turn()
+            # Now it's light's turn — light owns cube and can redouble
+            assert engine.can_double is True
+
+    def test_cannot_double_past_64(self, engine):
+        engine.game.cube.value = 64
+        assert engine.can_double is False
+
+    def test_forfeit_gives_cube_value_points(self, engine):
+        engine.game.cube.value = 4
+        engine.propose_double()
+        engine.respond_to_double(False)
+        winner, points, desc = engine.get_game_result()
+        assert winner == Color.DARK
+        assert points == 4
+        assert desc == "forfeit"
+
+
 class TestIllegalMoves:
     @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
     def test_illegal_move_rejected(self, mock_roll, engine):

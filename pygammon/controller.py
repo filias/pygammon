@@ -10,9 +10,11 @@ class GameController(QObject):
     dice_rolled = Signal(int, int)  # die1, die2
     turn_changed = Signal(str, str)  # player_name, player_color
     valid_moves_changed = Signal(list)  # list of (from, to, die) tuples
-    game_over = Signal(str)  # winner color
+    game_over = Signal(str, int, str)  # winner_color, points, description
     no_moves_available = Signal()
     turn_complete = Signal()  # all dice used, waiting for confirm
+    double_proposed = Signal(str)  # proposer name
+    cube_updated = Signal(int, object)  # value, owner (Color or None)
 
     def __init__(self, engine: GameEngine, ai_player=None, ai_color=None, parent=None):
         super().__init__(parent)
@@ -25,6 +27,7 @@ class GameController(QObject):
         self.engine.start_game()
         player = self.engine.current_player
         self.turn_changed.emit(player.name, player.color)
+        self.cube_updated.emit(self.engine.cube.value, self.engine.cube.owner)
         self.board_updated.emit()
 
     def _is_ai_turn(self) -> bool:
@@ -34,6 +37,49 @@ class GameController(QObject):
             and self.engine.current_player.color == self.ai_color
         )
 
+    def _is_ai_opponent(self) -> bool:
+        return (
+            self.ai_player is not None
+            and self.ai_color is not None
+            and self.engine.opponent.color == self.ai_color
+        )
+
+    # --- Doubling ---
+
+    def on_double_clicked(self):
+        if not self.engine.can_double:
+            return
+        self.engine.propose_double()
+        proposer = self.engine.current_player
+        self.double_proposed.emit(proposer.name)
+
+        # If AI is the opponent, let it respond after a delay
+        if self._is_ai_opponent():
+            QTimer.singleShot(800, self._ai_respond_to_double)
+
+    def on_double_response(self, accepted: bool):
+        if self.engine.phase != GamePhase.DOUBLING:
+            return
+        self.engine.respond_to_double(accepted)
+        self.cube_updated.emit(self.engine.cube.value, self.engine.cube.owner)
+
+        if self.engine.phase == GamePhase.GAME_OVER:
+            winner, points, desc = self.engine.get_game_result()
+            self.game_over.emit(str(winner), points, desc)
+        # Accepted — back to ROLLING, update UI
+        else:
+            self.board_updated.emit()
+
+    def _ai_respond_to_double(self):
+        accepted = True
+        if hasattr(self.ai_player, "should_accept_double"):
+            accepted = self.ai_player.should_accept_double(
+                self.engine.board, self.engine.opponent
+            )
+        self.on_double_response(accepted)
+
+    # --- Rolling and moving ---
+
     def on_roll_clicked(self):
         if self.engine.phase != GamePhase.ROLLING:
             return
@@ -42,7 +88,6 @@ class GameController(QObject):
         self.dice_rolled.emit(die1, die2)
 
         if self.engine.phase == GamePhase.TURN_COMPLETE:
-            # No valid moves at all — auto-skip
             self.no_moves_available.emit()
             self._finish_turn()
             return
@@ -62,16 +107,13 @@ class GameController(QObject):
             return
 
         if self.selected_point is None:
-            # First click — select source
             valid = self.engine.get_valid_moves()
             valid_sources = set(m[0] for m in valid)
             if point_index in valid_sources:
                 self.selected_point = point_index
-                # Filter destinations for this source
                 destinations = [m for m in valid if m[0] == point_index]
                 self.valid_moves_changed.emit(destinations)
         else:
-            # Second click — select destination
             valid = self.engine.get_valid_moves()
             matching = [
                 m for m in valid
@@ -84,15 +126,14 @@ class GameController(QObject):
                 self.board_updated.emit()
 
                 if self.engine.phase == GamePhase.GAME_OVER:
-                    self.game_over.emit(str(self.engine.winner))
+                    winner, points, desc = self.engine.get_game_result()
+                    self.game_over.emit(str(winner), points, desc)
                 elif self.engine.phase == GamePhase.TURN_COMPLETE:
                     self.turn_complete.emit()
                 else:
-                    # Still moving — show new valid moves
                     valid = self.engine.get_valid_moves()
                     self.valid_moves_changed.emit(valid)
             else:
-                # Invalid destination — deselect
                 self.selected_point = None
                 valid = self.engine.get_valid_moves()
                 self.valid_moves_changed.emit(valid)
@@ -119,19 +160,35 @@ class GameController(QObject):
         self.valid_moves_changed.emit([])
         self.board_updated.emit()
 
-        # If next turn is AI, auto-roll after a short delay
         if self._is_ai_turn():
-            QTimer.singleShot(500, self.on_roll_clicked)
+            # AI might want to double before rolling
+            QTimer.singleShot(500, self._ai_turn_start)
+
+    def _ai_turn_start(self):
+        """AI considers doubling, then rolls."""
+        if self.engine.phase != GamePhase.ROLLING:
+            return
+
+        # Check if AI wants to double
+        if self.engine.can_double and hasattr(self.ai_player, "should_double"):
+            if self.ai_player.should_double(
+                self.engine.board, self.engine.current_player
+            ):
+                self.engine.propose_double()
+                self.double_proposed.emit(self.engine.current_player.name)
+                # Human responds via dialog — don't auto-roll
+                return
+
+        self.on_roll_clicked()
 
     def _ai_play_moves(self):
-        """Let the AI play moves one at a time with delays so the player can see."""
         self._ai_play_next_move()
 
     def _ai_play_next_move(self):
-        """Execute one AI move, then schedule the next after a delay."""
         if self.engine.phase != GamePhase.MOVING:
             if self.engine.phase == GamePhase.GAME_OVER:
-                self.game_over.emit(str(self.engine.winner))
+                winner, points, desc = self.engine.get_game_result()
+                self.game_over.emit(str(winner), points, desc)
             elif self.engine.phase == GamePhase.TURN_COMPLETE:
                 QTimer.singleShot(800, self._finish_turn)
             return
@@ -151,5 +208,4 @@ class GameController(QObject):
         self.engine.execute_move(*best)
         self.board_updated.emit()
 
-        # Schedule next move after a short delay
         QTimer.singleShot(600, self._ai_play_next_move)

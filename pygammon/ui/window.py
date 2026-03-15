@@ -63,6 +63,11 @@ class BackgammonWindow(QMainWindow):
         controls.addWidget(self.confirm_button)
 
         controls.addStretch()
+
+        self.double_button = QPushButton("Double")
+        self.double_button.setStyleSheet("font-size: 14px; padding: 8px 16px;")
+        self.double_button.setEnabled(False)
+        controls.addWidget(self.double_button)
         self.main_layout.addLayout(controls)
 
         # Menu bar

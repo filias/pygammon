@@ -4,12 +4,13 @@ from typing import List, Optional, Tuple
 from pygammon.logic.dice import roll
 from pygammon.logic.models import Board, Color, Game, Player
 from pygammon.logic.move import get_valid_moves, move_checker
-from pygammon.logic.position import has_winner
+from pygammon.logic.position import WinType, get_win_type, has_winner
 
 
 class GamePhase(StrEnum):
     NOT_STARTED = "not_started"
     ROLLING = "rolling"
+    DOUBLING = "doubling"
     MOVING = "moving"
     TURN_COMPLETE = "turn_complete"
     GAME_OVER = "game_over"
@@ -36,6 +37,7 @@ class GameEngine:
         self.remaining_dice: List[int] = []
         self.move_count = 0
         self._undo_stack: List[_Snapshot] = []
+        self.forfeit_color: Optional[Color] = None
 
     @property
     def current_player(self) -> Player:
@@ -44,14 +46,78 @@ class GameEngine:
         return self.game.player2
 
     @property
+    def opponent(self) -> Player:
+        if self.game.current_player_index == 0:
+            return self.game.player2
+        return self.game.player1
+
+    @property
     def board(self) -> Board:
         return self.game.board
+
+    @property
+    def cube(self):
+        return self.game.cube
 
     def start_game(self):
         """Start the game — first player begins rolling."""
         self.game.current_player_index = 0
         self.game.current_player = self.game.player1
         self.phase = GamePhase.ROLLING
+
+    # --- Doubling cube ---
+
+    @property
+    def can_double(self) -> bool:
+        """Can the current player propose a double?"""
+        if self.phase != GamePhase.ROLLING:
+            return False
+        if self.cube.value >= 64:
+            return False
+        # Centered cube: either player can double
+        # Owned cube: only the owner can double
+        return self.cube.owner is None or self.cube.owner == self.current_player.color
+
+    def propose_double(self):
+        """Current player proposes to double the stakes."""
+        if not self.can_double:
+            raise ValueError("Cannot double right now")
+        self.phase = GamePhase.DOUBLING
+
+    def respond_to_double(self, accepted: bool):
+        """Opponent responds to a double proposal."""
+        if self.phase != GamePhase.DOUBLING:
+            raise ValueError(f"Cannot respond to double in phase {self.phase}")
+
+        if accepted:
+            self.cube.value *= 2
+            # The player who was doubled now owns the cube
+            self.cube.owner = self.opponent.color
+            # Back to rolling — same player still needs to roll
+            self.phase = GamePhase.ROLLING
+        else:
+            # Opponent declines — they forfeit at current stakes
+            self.forfeit_color = self.opponent.color
+            self.phase = GamePhase.GAME_OVER
+
+    def get_game_result(self) -> Tuple[Color, int, str]:
+        """Returns (winner, points, description)."""
+        if self.forfeit_color:
+            winner = Color.DARK if self.forfeit_color == Color.LIGHT else Color.LIGHT
+            points = self.cube.value
+            return winner, points, "forfeit"
+
+        winner = has_winner(self.board)
+        if winner is None:
+            return None, 0, ""
+
+        loser = Color.LIGHT if winner == Color.DARK else Color.DARK
+        win_type = get_win_type(self.board, loser)
+        multiplier = {"single": 1, "gammon": 2, "backgammon": 3}[win_type]
+        points = self.cube.value * multiplier
+        return winner, points, win_type
+
+    # --- Dice and movement ---
 
     def roll_dice(self) -> Tuple[int, int]:
         """Roll dice and transition to MOVING phase."""
@@ -61,18 +127,15 @@ class GameEngine:
         dice = roll()
         self.game.dice = dice
 
-        # Doubles give 4 moves
         if dice[0] == dice[1]:
             self.remaining_dice = [dice[0]] * 4
         else:
             self.remaining_dice = list(dice)
 
-        # Check if player has any valid moves
         valid = self.get_valid_moves()
         if valid:
             self.phase = GamePhase.MOVING
         else:
-            # No valid moves — skip to turn complete
             self.phase = GamePhase.TURN_COMPLETE
 
         return dice
@@ -91,14 +154,12 @@ class GameEngine:
         if self.phase != GamePhase.MOVING:
             raise ValueError(f"Cannot move in phase {self.phase}")
 
-        # Validate the move is legal
         valid_moves = self.get_valid_moves()
         if (from_point, to_point, die_value) not in valid_moves:
             raise ValueError(
                 f"Illegal move: ({from_point}, {to_point}, {die_value})"
             )
 
-        # Save snapshot for undo
         self._undo_stack.append(_Snapshot(
             position={k: list(v) for k, v in self.board.position.items()},
             bar=list(self.board.bar),
@@ -110,41 +171,33 @@ class GameEngine:
 
         player = self.current_player
 
-        # Handle bar entry: remove checker from bar
         if from_point == player.bar:
             self.board.bar.remove(player.color)
-            # Temporarily add to position for move_checker
             self.board.position.setdefault(from_point, []).insert(0, player.color)
 
         opponent_color, borne_off = move_checker(
             from_point, to_point, player, self.board.position
         )
 
-        # Handle hit — send opponent to bar
         if opponent_color:
             self.board.bar.append(opponent_color)
 
-        # Handle bearing off
         if borne_off:
             if player.color == Color.DARK:
                 self.board.off_dark.append(player.color)
             else:
                 self.board.off_light.append(player.color)
 
-        # Consume the die
         self.remaining_dice.remove(die_value)
         self.move_count += 1
 
-        # Check for winner
         winner = has_winner(self.board)
         if winner:
             self.phase = GamePhase.GAME_OVER
             return
 
-        # Check if more moves available
         if not self.remaining_dice or not self.get_valid_moves():
             self.phase = GamePhase.TURN_COMPLETE
-        # Otherwise stay in MOVING phase
 
     def undo_move(self) -> bool:
         """Undo the last move. Returns True if successful."""
@@ -169,7 +222,6 @@ class GameEngine:
         if self.phase != GamePhase.TURN_COMPLETE:
             raise ValueError(f"Cannot end turn in phase {self.phase}")
 
-        # Switch player
         self.game.current_player_index = 1 - self.game.current_player_index
         self.game.current_player = self.current_player
         self.remaining_dice = []
@@ -178,4 +230,6 @@ class GameEngine:
 
     @property
     def winner(self) -> Optional[Color]:
+        if self.forfeit_color:
+            return Color.DARK if self.forfeit_color == Color.LIGHT else Color.LIGHT
         return has_winner(self.board)

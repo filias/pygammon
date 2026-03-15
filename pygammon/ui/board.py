@@ -25,6 +25,7 @@ class PygammonScene(QGraphicsScene):
         self.bar_items = []
         self.dice_items = []
         self.tray_items = []
+        self.cube_items = []
         self.setSceneRect(0, 0, settings.board_width, settings.board_height)
 
     # --- Layout helpers ---
@@ -255,6 +256,51 @@ class PygammonScene(QGraphicsScene):
         for item in self.dice_items:
             self.removeItem(item)
         self.dice_items.clear()
+
+    # --- Doubling cube ---
+
+    def draw_cube(self, value: int, owner=None):
+        """Draw the doubling cube on the bar area."""
+        for item in self.cube_items:
+            self.removeItem(item)
+        self.cube_items.clear()
+
+        size = settings.cube_size
+        x = self._bar_x + (settings.bar_width - size) / 2
+        mid_y = settings.board_height / 2
+
+        if owner is None:
+            # Centered
+            y = mid_y - size / 2
+        elif owner == Color.DARK:
+            # Dark owns — near bottom
+            y = settings.board_height - size - 5
+        else:
+            # Light owns — near top
+            y = 5
+
+        body = QGraphicsRectItem(x, y, size, size)
+        body.setBrush(QBrush(QColor(settings.color_cube)))
+        body.setPen(QPen(QColor("#888888"), 1.5))
+        body.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+        self.addItem(body)
+        self.cube_items.append(body)
+
+        text = QGraphicsSimpleTextItem(str(value))
+        text.setBrush(QBrush(QColor(settings.color_cube_text)))
+        font = text.font()
+        font.setPixelSize(int(size * 0.6))
+        font.setBold(True)
+        text.setFont(font)
+        # Center text in cube
+        text_rect = text.boundingRect()
+        text.setPos(
+            x + (size - text_rect.width()) / 2,
+            y + (size - text_rect.height()) / 2,
+        )
+        text.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+        self.addItem(text)
+        self.cube_items.append(text)
 
     # --- Highlights ---
 

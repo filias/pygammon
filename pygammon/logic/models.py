@@ -164,10 +164,18 @@ class BackgammonMove(BaseModel):
         return self
 
 
+class DoublingCube(BaseModel):
+    """Represents the doubling cube."""
+
+    value: int = Field(default=1)
+    owner: Color | None = Field(default=None)  # None = centered
+
+
 class Game(BaseModel):
     """Represents a backgammon game with board state, players, and move history."""
 
     board: Board = Field(default_factory=Board)
+    cube: DoublingCube = Field(default_factory=DoublingCube)
     player1: Player = Field(
         default_factory=lambda: Player(
             name="Player 1", color=Color.DARK, direction=Direction.INCREASING

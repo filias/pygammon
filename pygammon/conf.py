@@ -30,6 +30,9 @@ class PygammonConfig(BaseSettings):
     color_selected: HexColor = "#ff8800"
     color_die_bg: HexColor = "#f5f0e1"
     color_die_pip: HexColor = "#1a1a1a"
+    color_cube: HexColor = "#f5f0e1"
+    color_cube_text: HexColor = "#1a1a1a"
+    cube_size: float = bar_width * 0.7
 
 
 settings = PygammonConfig()

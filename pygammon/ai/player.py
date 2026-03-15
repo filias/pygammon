@@ -20,6 +20,23 @@ class AIPlayer:
         self.model(tf.zeros((1, 198)))
         self.model.load_weights(model_path)
 
+    def _win_probability(self, board, player):
+        """Get win probability for the given player."""
+        encoded = encode_board(board, player.color)
+        x = tf.constant(encoded.reshape(1, -1))
+        value = self.model(x).numpy()[0, 0]
+        if player.color == Color.LIGHT:
+            value = 1.0 - value
+        return value
+
+    def should_double(self, board, player) -> bool:
+        """Propose doubling if win probability > 70%."""
+        return self._win_probability(board, player) > 0.70
+
+    def should_accept_double(self, board, player) -> bool:
+        """Accept a double if win probability > 25%."""
+        return self._win_probability(board, player) > 0.25
+
     def choose_move(self, board, player, legal_moves):
         """
         Evaluate all legal moves and return the best (from_pt, to_pt, die_val).
