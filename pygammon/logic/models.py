@@ -170,12 +170,12 @@ class Game(BaseModel):
     board: Board = Field(default_factory=Board)
     player1: Player = Field(
         default_factory=lambda: Player(
-            name="Player 1", color=Color.DARK, direction=Direction.DECREASING
+            name="Player 1", color=Color.DARK, direction=Direction.INCREASING
         )
     )
     player2: Player = Field(
         default_factory=lambda: Player(
-            name="Player 2", color=Color.LIGHT, direction=Direction.INCREASING
+            name="Player 2", color=Color.LIGHT, direction=Direction.DECREASING
         )
     )
     current_player: Player = Field(default=None)

@@ -76,7 +76,7 @@ class TestDoubles:
 class TestBarEnforcement:
     @patch("pygammon.logic.game_engine.roll", return_value=(3, 5))
     def test_bar_moves_only_when_on_bar(self, mock_roll, engine):
-        # Put a dark checker on the bar
+        # Put a dark checker on the bar (dark is INCREASING, bar=0)
         engine.board.bar.append(Color.DARK)
         # Remove it from a point to keep count consistent
         engine.board.position[1].pop()
@@ -84,30 +84,30 @@ class TestBarEnforcement:
         engine.roll_dice()
         valid = engine.get_valid_moves()
 
-        # All moves should be from bar (point 25 for dark/decreasing)
-        assert all(m[0] == 25 for m in valid)
+        # All moves should be from bar (point 0 for dark/increasing)
+        assert all(m[0] == 0 for m in valid)
 
 
 class TestBearingOff:
     @patch("pygammon.logic.game_engine.roll", return_value=(3, 2))
     def test_bearing_off(self, mock_roll):
         game = Game()
-        # Set up dark with all checkers in home (points 1-6)
+        # Set up dark with all checkers in home (points 19-24, dark is INCREASING)
         game.board.position = {
-            1: [Color.DARK, Color.DARK, Color.DARK],
-            2: [Color.DARK, Color.DARK, Color.DARK],
-            3: [Color.DARK, Color.DARK, Color.DARK],
-            4: [Color.DARK, Color.DARK, Color.DARK],
-            5: [Color.DARK, Color.DARK],
-            6: [Color.DARK],
+            19: [Color.DARK, Color.DARK, Color.DARK],
+            20: [Color.DARK, Color.DARK, Color.DARK],
+            21: [Color.DARK, Color.DARK, Color.DARK],
+            22: [Color.DARK, Color.DARK, Color.DARK],
+            23: [Color.DARK, Color.DARK],
+            24: [Color.DARK],
         }
         engine = GameEngine(game)
         engine.start_game()
         engine.roll_dice()
 
         valid = engine.get_valid_moves()
-        # Should have bearing-off moves
-        bear_off_moves = [m for m in valid if m[1] == 0]
+        # Should have bearing-off moves (bear_off=25 for increasing)
+        bear_off_moves = [m for m in valid if m[1] == 25]
         assert len(bear_off_moves) > 0
 
 
@@ -115,7 +115,8 @@ class TestWinDetection:
     @patch("pygammon.logic.game_engine.roll", return_value=(1, 1))
     def test_game_over_on_last_bear_off(self, mock_roll):
         game = Game()
-        game.board.position = {1: [Color.DARK]}
+        # Dark is INCREASING, bear_off=25, last checker at point 24
+        game.board.position = {24: [Color.DARK]}
         game.board.off_dark = [Color.DARK] * 14
         game.board.bar = []
 
@@ -123,7 +124,7 @@ class TestWinDetection:
         engine.start_game()
         engine.roll_dice()
 
-        engine.execute_move(1, 0, 1)
+        engine.execute_move(24, 25, 1)
         assert engine.phase == GamePhase.GAME_OVER
         assert engine.winner == Color.DARK
 

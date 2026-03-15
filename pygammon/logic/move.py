@@ -10,10 +10,10 @@ def select_checker_to_play(player: Player, position: Position) -> Optional[Point
     We return the first point that contains a checker of the player's color.
     """
 
-    # Decide direction based on player color
-    if player.color == "light":  # Color.LIGHT
+    # Decide direction based on player direction
+    if player.direction == Direction.INCREASING:
         points_to_check = range(1, 25)  # from 1 to 24
-    else:  # Color.DARK
+    else:
         points_to_check = range(24, 0, -1)  # from 24 down to 1
 
     # Look for the first point that has a checker of this player
@@ -43,8 +43,8 @@ def checker_can_move(
       - single opponent -> allowed (hit)
       - two or more opponent -> blocked
     """
-    # compute target depending on player color
-    if player.color == "light":
+    # compute target depending on player direction
+    if player.direction == Direction.INCREASING:
         target = from_point + die_value
     else:
         target = from_point - die_value
