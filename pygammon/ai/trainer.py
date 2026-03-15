@@ -26,7 +26,7 @@ class TDTrainer:
 
     def train_episode(self) -> dict:
         """Play one self-play game and train the model. Returns stats."""
-        state = self.api.reset()
+        self.api.reset()
 
         # Build model if needed (first call)
         dummy = np.zeros((1, 198), dtype=np.float32)
@@ -129,8 +129,6 @@ class TDTrainer:
         # For efficiency, just use the current value + a small random noise
         # (dice provide natural exploration in backgammon)
         # A full lookahead would copy the board state — we use the simpler approach
-        import copy
-
         board = self.api.engine.board
         position_copy = {k: list(v) for k, v in board.position.items()}
         bar_copy = list(board.bar)

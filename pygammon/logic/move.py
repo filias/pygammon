@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 
-from pygammon.logic.models import Board, Color, Direction, Player, Position, Point
+from pygammon.logic.models import Direction, Player, Position, Point
 
 
 def select_checker_to_play(player: Player, position: Position) -> Optional[Point]:

@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from pygammon.logic.dice import roll
 from pygammon.logic.models import Board, Color, Game, Player
 from pygammon.logic.move import get_valid_moves, move_checker
-from pygammon.logic.position import WinType, get_win_type, has_winner
+from pygammon.logic.position import get_win_type, has_winner
 
 
 class GamePhase(StrEnum):

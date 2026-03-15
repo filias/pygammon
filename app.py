@@ -86,7 +86,7 @@ def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_col
     window.double_button.clicked.connect(controller.on_double_clicked)
 
     controller.opening_rolled.connect(
-        lambda d, l, tie: _on_opening_rolled(scene, window, controller, d, l, tie)
+        lambda dk, lt, tie: _on_opening_rolled(scene, window, controller, dk, lt, tie)
     )
 
     controller.start_game()
@@ -112,7 +112,6 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
     from pygammon.ui.dice import DieItem
     from pygammon.conf import settings as s
     size = s.die_size
-    gap = size * 0.4
     _PX = s.panel_width
     mid_y = s.board_height / 2
 
@@ -216,7 +215,7 @@ def _on_game_over(window, game, winner, points, desc):
     if match_won or ml == 0:
         QMessageBox.information(window, "Game Over", msg)
     else:
-        reply = QMessageBox.information(
+        QMessageBox.information(
             window, "Game Over", msg + "\n\nStarting next game...",
         )
         # Start next game in the match

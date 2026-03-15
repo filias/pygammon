@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 
 from pygammon.logic.game_engine import GameEngine, GamePhase
-from pygammon.logic.models import Board, Color, Game
+from pygammon.logic.models import Color, Game
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ class TestOpeningRoll:
         engine.start_game()
         # Keep rolling until we get a result (tie or not)
         for _ in range(100):
-            d, l, is_tie = engine.opening_roll()
+            dark_d, light_d, is_tie = engine.opening_roll()
             if is_tie:
                 assert engine.phase == GamePhase.OPENING_ROLL
                 break
@@ -43,12 +43,12 @@ class TestOpeningRoll:
         engine = GameEngine(game)
         engine.start_game()
         for _ in range(100):
-            d, l, is_tie = engine.opening_roll()
+            dark_d, light_d, is_tie = engine.opening_roll()
             if not is_tie:
                 break
         assert engine.phase in (GamePhase.MOVING, GamePhase.TURN_COMPLETE)
         assert len(engine.remaining_dice) == 2
-        if d > l:
+        if dark_d > light_d:
             assert engine.current_player.color == Color.DARK
         else:
             assert engine.current_player.color == Color.LIGHT
