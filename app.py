@@ -176,17 +176,21 @@ def _on_game_over(window, game, winner, points, desc):
 
 
 def _on_double_proposed(window, controller, proposer_name):
-    if controller._is_ai_turn():
-        cube_value = controller.engine.cube.value
-        new_value = cube_value * 2
-        reply = QMessageBox.question(
-            window,
-            "Double Proposed",
-            f"{proposer_name} proposes to double the stakes to {new_value}.\n\n"
-            f"Accept or decline?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        controller.on_double_response(reply == QMessageBox.StandardButton.Yes)
+    # AI opponent responds automatically via controller._ai_respond_to_double
+    if controller._is_ai_opponent():
+        return
+
+    # Human opponent must respond via dialog
+    cube_value = controller.engine.cube.value
+    new_value = cube_value * 2
+    reply = QMessageBox.question(
+        window,
+        "Double Proposed",
+        f"{proposer_name} proposes to double the stakes to {new_value}.\n\n"
+        f"Accept or decline?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+    )
+    controller.on_double_response(reply == QMessageBox.StandardButton.Yes)
 
 
 def _play_vs_ai(window):
