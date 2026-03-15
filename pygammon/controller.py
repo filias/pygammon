@@ -124,20 +124,32 @@ class GameController(QObject):
             QTimer.singleShot(500, self.on_roll_clicked)
 
     def _ai_play_moves(self):
-        """Let the AI play all moves for the current turn."""
-        while self.engine.phase == GamePhase.MOVING:
-            legal = self.engine.get_valid_moves()
-            if not legal:
-                break
-            best = self.ai_player.choose_move(
-                self.engine.board, self.engine.current_player, legal
-            )
-            if best is None:
-                break
-            self.engine.execute_move(*best)
-            self.board_updated.emit()
+        """Let the AI play moves one at a time with delays so the player can see."""
+        self._ai_play_next_move()
 
-        if self.engine.phase == GamePhase.GAME_OVER:
-            self.game_over.emit(str(self.engine.winner))
-        elif self.engine.phase == GamePhase.TURN_COMPLETE:
-            self._finish_turn()
+    def _ai_play_next_move(self):
+        """Execute one AI move, then schedule the next after a delay."""
+        if self.engine.phase != GamePhase.MOVING:
+            if self.engine.phase == GamePhase.GAME_OVER:
+                self.game_over.emit(str(self.engine.winner))
+            elif self.engine.phase == GamePhase.TURN_COMPLETE:
+                QTimer.singleShot(800, self._finish_turn)
+            return
+
+        legal = self.engine.get_valid_moves()
+        if not legal:
+            if self.engine.phase == GamePhase.TURN_COMPLETE:
+                QTimer.singleShot(800, self._finish_turn)
+            return
+
+        best = self.ai_player.choose_move(
+            self.engine.board, self.engine.current_player, legal
+        )
+        if best is None:
+            return
+
+        self.engine.execute_move(*best)
+        self.board_updated.emit()
+
+        # Schedule next move after a short delay
+        QTimer.singleShot(600, self._ai_play_next_move)
