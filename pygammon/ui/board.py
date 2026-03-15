@@ -174,6 +174,7 @@ class PygammonScene(QGraphicsScene):
             highlight = QGraphicsEllipseItem(x, y_center - r, r * 2, r * 2)
             highlight.setBrush(QBrush(QColor(settings.color_highlight_dest)))
             highlight.setOpacity(0.4)
+            highlight.setAcceptedMouseButtons(0)  # Click-through
             self.addItem(highlight)
             self.highlight_items.append(highlight)
 
@@ -189,15 +190,10 @@ class PygammonScene(QGraphicsScene):
             self.controller.on_point_clicked(point_index)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
-        # Let checker clicks handle themselves first via default dispatch
-        super().mousePressEvent(event)
-
-        # If no checker was clicked, map click position to a board point
-        if not event.isAccepted():
-            return
-        # Check if a checker handled this already
+        # Check if a CheckerItem was clicked — let it handle via on_checker_clicked
         for item in self.items(event.scenePos()):
             if isinstance(item, CheckerItem):
+                item.mousePressEvent(event)
                 return
 
         # No checker at click position — resolve as a point click
