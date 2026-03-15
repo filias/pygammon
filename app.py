@@ -23,7 +23,9 @@ def create_game(window: BackgammonWindow, ai_player=None, ai_color=None):
 
     # Connect signals
     controller.board_updated.connect(lambda: _on_board_updated(scene, game, window))
-    controller.dice_rolled.connect(window.update_dice_label)
+    controller.dice_rolled.connect(
+        lambda d1, d2: (window.update_dice_label(d1, d2), window.roll_button.setEnabled(False))
+    )
     controller.turn_changed.connect(
         lambda name, color: _on_turn_changed(window, name, color)
     )

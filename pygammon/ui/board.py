@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsPolygonItem,
     QGraphicsEllipseItem,
+    QGraphicsSceneMouseEvent,
     QGraphicsTextItem,
 )
 
@@ -186,6 +187,59 @@ class PygammonScene(QGraphicsScene):
     def on_checker_clicked(self, point_index: int):
         if self.controller:
             self.controller.on_point_clicked(point_index)
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        # Let checker clicks handle themselves first via default dispatch
+        super().mousePressEvent(event)
+
+        # If no checker was clicked, map click position to a board point
+        if not event.isAccepted():
+            return
+        # Check if a checker handled this already
+        for item in self.items(event.scenePos()):
+            if isinstance(item, CheckerItem):
+                return
+
+        # No checker at click position — resolve as a point click
+        point = self._point_from_position(event.scenePos())
+        if point is not None and self.controller:
+            self.controller.on_point_clicked(point)
+
+    def _point_from_position(self, pos):
+        """Convert a scene position to a board point index (1-24) or None."""
+        x, y = pos.x(), pos.y()
+        half_h = settings.board_height / 2
+
+        # Determine if top half (points 1-12) or bottom half (points 13-24)
+        is_top = y < half_h
+
+        # Calculate which column (0-12) the click is in
+        # Account for the bar gap between columns 5 and 6
+        bar_left = 6 * settings.point_width
+        bar_right = bar_left + settings.point_width
+
+        if bar_left <= x <= bar_right:
+            return None  # Clicked on bar
+
+        if x < bar_left:
+            col = int(x / settings.point_width)
+            if col > 5:
+                col = 5
+        elif x > bar_right:
+            col = int((x - settings.point_width) / settings.point_width)
+            if col < 6:
+                col = 6
+            if col > 11:
+                col = 11
+        else:
+            return None
+
+        if is_top:
+            # Top row: left to right = points 1-12
+            return col + 1
+        else:
+            # Bottom row: left to right = points 24, 23, ..., 13
+            return 24 - col
 
 
 def _get_color(index: int) -> QColor:
