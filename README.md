@@ -40,7 +40,7 @@ uv sync --extra ai
 
 ### Run self-play training
 ```bash
-uv run python -m pygammon.ai.train_selfplay --episodes 1000
+uv run python -u -m pygammon.ai.train_selfplay --episodes 1000
 ```
 
 Options:
