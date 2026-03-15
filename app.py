@@ -116,19 +116,22 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
     _PX = s.panel_width
     mid_y = s.board_height / 2
 
-    # Dark's die — right half, bottom
+    # Both dice vertically centered
+    y = mid_y - size / 2
+
+    # Dark's die — right half, centered
     right_x = scene._bar_x + s.bar_width
     right_w = scene._tray_x - right_x
     dx = right_x + (right_w - size) / 2
-    d1 = DieItem(dx, mid_y + gap, dark_die,
+    d1 = DieItem(dx, y, dark_die,
                  bg_color=s.color_dark_checker, pip_color=s.color_light_checker)
     scene.addItem(d1)
     scene.dice_items.append(d1)
 
-    # Light's die — left half, top
+    # Light's die — left half, centered
     left_w = scene._bar_x - _PX
     lx = _PX + (left_w - size) / 2
-    d2 = DieItem(lx, mid_y - gap - size, light_die,
+    d2 = DieItem(lx, y, light_die,
                  bg_color=s.color_light_checker, pip_color=s.color_dark_checker)
     scene.addItem(d2)
     scene.dice_items.append(d2)
