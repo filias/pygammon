@@ -8,11 +8,13 @@ HexColor = Annotated[str, Field(pattern=r"^#[0-9A-Fa-f]{6}$")]
 
 class PygammonConfig(BaseSettings):
     # Board settings
-    board_width: PositiveInt = 800
-    board_height: float = board_width / 1.6  # Golden ratio
+    panel_width: float = 100
+    board_width: PositiveInt = 900
+    board_height: float = (board_width - panel_width) / 1.6  # Golden ratio
     bar_width: float = 50
     tray_width: float = 70
-    point_width: float = (board_width - bar_width - tray_width) / 12
+    playing_width: float = board_width - panel_width
+    point_width: float = (playing_width - bar_width - tray_width) / 12
     point_height: float = point_width * 4
     checker_radius: float = point_width * 0.4
     die_size: float = point_width * 0.75
@@ -23,6 +25,8 @@ class PygammonConfig(BaseSettings):
     color_board: HexColor = "#3e72d8"
     color_bar: HexColor = "#1e3a6e"
     color_tray: HexColor = "#2a4a80"
+    color_panel: HexColor = "#1a2a50"
+    color_panel_text: HexColor = "#ffffff"
     color_dark_checker: HexColor = "#2e2da2"
     color_light_checker: HexColor = "#d2d8f2"
     color_highlight_source: HexColor = "#ffff00"

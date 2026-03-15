@@ -4,7 +4,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QMenuBar,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -34,15 +33,9 @@ class BackgammonWindow(QMainWindow):
         info_bar.addWidget(self.dice_label)
 
         info_bar.addStretch()
-
-        self.off_dark_label = QLabel("Dark off: 0")
-        self.off_light_label = QLabel("Light off: 0")
-        info_bar.addWidget(self.off_dark_label)
-        info_bar.addWidget(self.off_light_label)
-
         self.main_layout.addLayout(info_bar)
 
-        # Board view placeholder (set by set_scene)
+        # Board view placeholder
         self.view = None
 
         # Bottom controls
@@ -73,8 +66,13 @@ class BackgammonWindow(QMainWindow):
         # Menu bar
         menu_bar = self.menuBar()
         game_menu = menu_bar.addMenu("Game")
-        self.new_game_action = game_menu.addAction("New Game")
+        self.new_game_action = game_menu.addAction("New Game (unlimited)")
         self.play_vs_ai_action = game_menu.addAction("Play vs AI")
+        match_menu = menu_bar.addMenu("Match")
+        self.match_actions = {}
+        for length in [3, 5, 7, 9, 11, 13, 15, 17, 19, 21]:
+            action = match_menu.addAction(f"Match to {length}")
+            self.match_actions[length] = action
 
     def set_scene(self, scene):
         if self.view:
@@ -82,7 +80,6 @@ class BackgammonWindow(QMainWindow):
             self.view.deleteLater()
         self.view = QGraphicsView(scene)
         self.view.setFixedSize(settings.board_width + 20, settings.board_height + 20)
-        # Insert before the controls layout (index 1, after info bar)
         self.main_layout.insertWidget(1, self.view)
         self.resize(settings.board_width + 40, settings.board_height + 120)
 
@@ -91,7 +88,3 @@ class BackgammonWindow(QMainWindow):
 
     def update_dice_label(self, die1: int, die2: int):
         self.dice_label.setText(f"Dice: {die1}, {die2}")
-
-    def update_off_counts(self, dark_off: int, light_off: int):
-        self.off_dark_label.setText(f"Dark off: {dark_off}")
-        self.off_light_label.setText(f"Light off: {light_off}")

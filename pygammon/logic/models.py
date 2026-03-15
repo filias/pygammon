@@ -190,5 +190,9 @@ class Game(BaseModel):
     current_player_index: int = Field(default=0)
     dice: tuple[int, int] | None = Field(default=None)
     moves: dict[int, BackgammonMove] = Field(default_factory=dict)
+    scores: dict[str, int] = Field(
+        default_factory=lambda: {Color.DARK: 0, Color.LIGHT: 0}
+    )
+    match_length: int = Field(default=0)  # 0 = unlimited
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

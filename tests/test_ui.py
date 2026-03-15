@@ -113,15 +113,16 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        pos = QPointF(settings.point_width * 0.5, settings.board_height * 0.25)
+        px = settings.panel_width
+        pos = QPointF(px + settings.point_width * 0.5, settings.board_height * 0.25)
         assert scene._point_from_position(pos) == 1
 
     def test_top_right_is_point_12(self, scene):
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        # Column 11, right of bar
-        x = 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
+        px = settings.panel_width
+        x = px + 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
         pos = QPointF(x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) == 12
 
@@ -129,14 +130,16 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        pos = QPointF(settings.point_width * 0.5, settings.board_height * 0.75)
+        px = settings.panel_width
+        pos = QPointF(px + settings.point_width * 0.5, settings.board_height * 0.75)
         assert scene._point_from_position(pos) == 24
 
     def test_bottom_right_is_point_13(self, scene):
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        x = 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
+        px = settings.panel_width
+        x = px + 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
         pos = QPointF(x, settings.board_height * 0.75)
         assert scene._point_from_position(pos) == 13
 
@@ -144,16 +147,25 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        bar_x = 6 * settings.point_width + settings.bar_width * 0.5
+        px = settings.panel_width
+        bar_x = px + 6 * settings.point_width + settings.bar_width * 0.5
         pos = QPointF(bar_x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) is None
 
-    def test_tray_returns_none(self, scene):
+    def test_tray_returns_bear_off(self, scene):
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        tray_x = 12 * settings.point_width + settings.bar_width + settings.tray_width * 0.5
+        px = settings.panel_width
+        tray_x = px + 12 * settings.point_width + settings.bar_width + settings.tray_width * 0.5
         pos = QPointF(tray_x, settings.board_height * 0.25)
+        assert scene._point_from_position(pos) == 0  # Light bear-off
+
+    def test_panel_returns_none(self, scene):
+        from PySide6.QtCore import QPointF
+        from pygammon.conf import settings
+
+        pos = QPointF(settings.panel_width * 0.5, settings.board_height * 0.5)
         assert scene._point_from_position(pos) is None
 
 
