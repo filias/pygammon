@@ -79,12 +79,12 @@ def main():
             )
 
         if episode % args.checkpoint_every == 0:
-            path = os.path.join(args.checkpoint_dir, f"td_gammon_ep{episode}")
+            path = os.path.join(args.checkpoint_dir, f"td_gammon_ep{episode}.weights.h5")
             model.save_weights(path)
             print(f"Checkpoint saved: {path}")
 
     # Final save
-    final_path = os.path.join(args.checkpoint_dir, "td_gammon_final")
+    final_path = os.path.join(args.checkpoint_dir, "td_gammon_final.weights.h5")
     model.save_weights(final_path)
     print(f"Training complete. Final model saved: {final_path}")
 
