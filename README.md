@@ -22,9 +22,9 @@ cd pygammon
 ```
 ### Install dependencies
 Using uv:
-    ```bash
-    uv sync
-    ```
+```bash
+uv sync
+```
 
 ## Run the game
 ```bash
