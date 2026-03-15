@@ -184,7 +184,7 @@ class PygammonScene(QGraphicsScene):
                 bar_cx, y,
                 settings.checker_radius * 2,
                 QColor(color),
-                point_index=25 if checker_color_val == Color.DARK else 0,
+                point_index=0 if checker_color_val == Color.DARK else 25,
             )
             self.addItem(item)
             self.bar_items.append(item)
