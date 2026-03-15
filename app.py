@@ -63,6 +63,21 @@ def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_col
         lambda value, owner: scene.draw_cube(value, owner)
     )
 
+    # Disconnect old button signals before reconnecting
+    for btn in [window.roll_button, window.undo_button, window.confirm_button,
+                window.double_button]:
+        try:
+            btn.clicked.disconnect()
+        except RuntimeError:
+            pass
+
+    # Connect UI controls
+    window.roll_button.clicked.connect(controller.on_roll_clicked)
+    window.roll_button.setEnabled(True)
+    window.undo_button.clicked.connect(controller.on_undo_clicked)
+    window.confirm_button.clicked.connect(controller.on_confirm_clicked)
+    window.double_button.clicked.connect(controller.on_double_clicked)
+
     controller.start_game()
     _update_panel(scene, game, controller)
 
