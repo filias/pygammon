@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 
 from pygammon.logic.models import Color
 from pygammon.ui.checker import CheckerItem
+from pygammon.ui.dice import DieItem
 from pygammon.conf import settings
 
 
@@ -21,6 +22,7 @@ class PygammonScene(QGraphicsScene):
         self.checker_items = []
         self.highlight_items = []
         self.bar_items = []
+        self.dice_items = []
         self.setSceneRect(0, 0, settings.board_width, settings.board_height)
 
     def draw_board(self):
@@ -150,6 +152,33 @@ class PygammonScene(QGraphicsScene):
             )
             self.addItem(item)
             self.bar_items.append(item)
+
+    def draw_dice(self, die1: int, die2: int, player_color: str):
+        """Draw two dice on the right side of the board for the given player."""
+        self.clear_dice()
+
+        size = settings.die_size
+        gap = size * 0.3
+        # Right margin: after the 12 points + bar
+        x_start = 13 * settings.point_width + gap
+
+        if player_color == Color.DARK:
+            # Dark plays on bottom half — dice in bottom-right
+            y = settings.board_height * 0.5 + gap
+        else:
+            # Light plays on top half — dice in top-right
+            y = settings.board_height * 0.5 - gap - size
+
+        d1 = DieItem(x_start, y, die1)
+        d2 = DieItem(x_start + size + gap, y, die2)
+        self.addItem(d1)
+        self.addItem(d2)
+        self.dice_items.extend([d1, d2])
+
+    def clear_dice(self):
+        for item in self.dice_items:
+            self.removeItem(item)
+        self.dice_items.clear()
 
     def refresh_board(self):
         self.clear_highlights()

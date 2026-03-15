@@ -24,10 +24,10 @@ def create_game(window: BackgammonWindow, ai_player=None, ai_color=None):
     # Connect signals
     controller.board_updated.connect(lambda: _on_board_updated(scene, game, window, controller))
     controller.dice_rolled.connect(
-        lambda d1, d2: (window.update_dice_label(d1, d2), window.roll_button.setEnabled(False))
+        lambda d1, d2: _on_dice_rolled(scene, window, controller, d1, d2)
     )
     controller.turn_changed.connect(
-        lambda name, color: _on_turn_changed(window, name, color)
+        lambda name, color: _on_turn_changed(scene, window, name, color)
     )
     controller.valid_moves_changed.connect(
         lambda moves: _on_valid_moves(scene, moves, controller)
@@ -58,15 +58,22 @@ def _on_board_updated(scene, game, window, controller):
     window.confirm_button.setEnabled(controller.engine.phase == GamePhase.TURN_COMPLETE)
 
 
+def _on_dice_rolled(scene, window, controller, d1, d2):
+    window.update_dice_label(d1, d2)
+    window.roll_button.setEnabled(False)
+    scene.draw_dice(d1, d2, controller.engine.current_player.color)
+
+
 def _on_turn_complete(window):
     window.confirm_button.setEnabled(True)
 
 
-def _on_turn_changed(window, name, color):
+def _on_turn_changed(scene, window, name, color):
     window.update_player_label(name, color)
     window.dice_label.setText("")
     window.roll_button.setEnabled(True)
     window.confirm_button.setEnabled(False)
+    scene.clear_dice()
 
 
 def _on_valid_moves(scene, moves, controller):

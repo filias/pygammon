@@ -30,6 +30,9 @@ class PygammonConfig(BaseSettings):
     color_highlight_source: HexColor = "#ffff00"
     color_highlight_dest: HexColor = "#00ff00"
     color_selected: HexColor = "#ff8800"
+    color_die_bg: HexColor = "#f5f0e1"
+    color_die_pip: HexColor = "#1a1a1a"
+    die_size: float = point_width * 0.85
 
 
 settings = PygammonConfig()
