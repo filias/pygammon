@@ -9,6 +9,13 @@ import tensorflow as tf
 from pygammon.ai.model import TDGammonModel
 from pygammon.ai.trainer import TDTrainer
 
+try:
+    import tensorboard  # noqa: F401
+
+    HAS_TENSORBOARD = True
+except ImportError:
+    HAS_TENSORBOARD = False
+
 
 def main():
     parser = argparse.ArgumentParser(description="Train TD-Gammon via self-play")
@@ -27,7 +34,6 @@ def main():
     args = parser.parse_args()
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
-    os.makedirs(args.logdir, exist_ok=True)
 
     model = TDGammonModel(hidden_size=args.hidden_size)
     # Build model
@@ -39,7 +45,12 @@ def main():
 
     trainer = TDTrainer(model, learning_rate=args.lr, lamda=args.lamda)
 
-    writer = tf.summary.create_file_writer(args.logdir)
+    writer = None
+    if HAS_TENSORBOARD:
+        os.makedirs(args.logdir, exist_ok=True)
+        writer = tf.summary.create_file_writer(args.logdir)
+    else:
+        print("TensorBoard not installed, skipping logging. Install with: uv pip install tensorboard")
 
     dark_wins = 0
     total_moves = 0
@@ -51,11 +62,12 @@ def main():
         if stats["winner"] == "dark":
             dark_wins += 1
 
-        with writer.as_default():
-            tf.summary.scalar("moves_per_game", stats["moves"], step=episode)
-            tf.summary.scalar(
-                "dark_win_rate", dark_wins / episode, step=episode
-            )
+        if writer is not None:
+            with writer.as_default():
+                tf.summary.scalar("moves_per_game", stats["moves"], step=episode)
+                tf.summary.scalar(
+                    "dark_win_rate", dark_wins / episode, step=episode
+                )
 
         if episode % 10 == 0:
             elapsed = time.time() - start_time
