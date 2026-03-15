@@ -120,7 +120,8 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        x = 11 * settings.point_width + settings.point_width + settings.point_width * 0.5
+        # Column 11, right of bar
+        x = 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
         pos = QPointF(x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) == 12
 
@@ -135,7 +136,7 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        x = 11 * settings.point_width + settings.point_width + settings.point_width * 0.5
+        x = 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
         pos = QPointF(x, settings.board_height * 0.75)
         assert scene._point_from_position(pos) == 13
 
@@ -143,8 +144,16 @@ class TestPointFromPosition:
         from PySide6.QtCore import QPointF
         from pygammon.conf import settings
 
-        bar_x = 6 * settings.point_width + settings.point_width * 0.5
+        bar_x = 6 * settings.point_width + settings.bar_width * 0.5
         pos = QPointF(bar_x, settings.board_height * 0.25)
+        assert scene._point_from_position(pos) is None
+
+    def test_tray_returns_none(self, scene):
+        from PySide6.QtCore import QPointF
+        from pygammon.conf import settings
+
+        tray_x = 12 * settings.point_width + settings.bar_width + settings.tray_width * 0.5
+        pos = QPointF(tray_x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) is None
 
 
