@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ai = ["tensorflow>=2.15", "numpy>=1.24", "tensorboard>=2.15", "setuptools<81"]
+ai = ["tensorflow>=2.15", "numpy>=1.24", "tensorboard>=2.15", "setuptools<83"]
