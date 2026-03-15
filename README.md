@@ -28,7 +28,7 @@ uv sync
 
 ## Run the game
 ```bash
-python app.py
+uv run python app.py
 ```
 
 ## Train the AI
@@ -63,7 +63,7 @@ Run the game and go to **Game → Play vs AI**, then select a checkpoint file fr
 
 ## Apply formatting
 ```bash
-uv format
+uv run ruff format
 ```
 
 ## Architecture (MVC)
@@ -73,6 +73,3 @@ Controller: GameController, GameEngine, app.py
 
 ## Project Structure
 <img src="structure.png" width="200">
-
-## Authors
-Developed by Filipa.
