@@ -271,8 +271,12 @@ class PygammonScene(QGraphicsScene):
 
     def highlight_valid_destinations(self, moves):
         self.clear_highlights()
+        has_bear_off = False
         for m in moves:
             dest = m[1]
+            if dest == 0 or dest == 25:
+                has_bear_off = True
+                continue
             if dest < 1 or dest > 24:
                 continue
             x = self._calculate_x_checker(dest)
@@ -285,6 +289,25 @@ class PygammonScene(QGraphicsScene):
             highlight = QGraphicsEllipseItem(x, y_center - r, r * 2, r * 2)
             highlight.setBrush(QBrush(QColor(settings.color_highlight_dest)))
             highlight.setOpacity(0.4)
+            highlight.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+            self.addItem(highlight)
+            self.highlight_items.append(highlight)
+
+        if has_bear_off:
+            # Highlight the bear-off tray
+            bear_off_dest = moves[0][1]  # 0 or 25
+            tray_x = self._tray_x
+            if bear_off_dest == 25:
+                # Dark bears off — bottom half of tray
+                tray_y = settings.board_height / 2
+                tray_h = settings.board_height / 2
+            else:
+                # Light bears off — top half of tray
+                tray_y = 0
+                tray_h = settings.board_height / 2
+            highlight = QGraphicsRectItem(tray_x, tray_y, settings.tray_width, tray_h)
+            highlight.setBrush(QBrush(QColor(settings.color_highlight_dest)))
+            highlight.setOpacity(0.3)
             highlight.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
             self.addItem(highlight)
             self.highlight_items.append(highlight)
@@ -322,7 +345,11 @@ class PygammonScene(QGraphicsScene):
         if x >= self._bar_x and x <= self._bar_x + settings.bar_width:
             return None
         if x >= self._tray_x:
-            return None
+            # Bear-off tray: bottom half = 25 (dark), top half = 0 (light)
+            if is_top:
+                return 0
+            else:
+                return 25
 
         # Left half (columns 0-5)
         if x < self._bar_x:
