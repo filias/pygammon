@@ -3,10 +3,10 @@
 import pytest
 
 try:
-    import importlib.util
+    from PySide6.QtWidgets import QApplication  # noqa: F401
 
-    HAS_PYSIDE6 = importlib.util.find_spec("PySide6") is not None
-except Exception:
+    HAS_PYSIDE6 = True
+except (ImportError, OSError):
     HAS_PYSIDE6 = False
 
 pytestmark = pytest.mark.skipif(not HAS_PYSIDE6, reason="PySide6 not installed")
