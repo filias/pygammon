@@ -67,33 +67,124 @@ Run the game and go to **Game → Play vs AI**, then select a checkpoint file fr
 
 ### How the AI works
 
-The AI uses **TD-Gammon**, a classic reinforcement learning approach where a neural network learns to evaluate board positions by playing against itself.
+The AI uses **TD-Gammon**, a reinforcement learning approach from [Tesauro's 1992 paper](https://en.wikipedia.org/wiki/TD-Gammon) where a neural network learns to evaluate board positions by playing against itself.
 
-**The neural network** takes a board position encoded as 198 numbers and outputs a single value between 0 and 1 — the estimated probability that Dark wins from this position.
+#### What is a neural network?
 
-**The encoding** converts the board into 198 features:
-- For each of the 24 points, for each player: 4 features (has 1 checker?, has 2?, has 3?, how many extra)
-- Bar count, borne-off count, whose turn it is
-- That's 24 x 2 x 4 + 2 + 2 + 2 = 198
+A neural network is a chain of simple math operations. Ours has two layers:
 
-**Training loop** — each episode:
-1. Start a new game
-2. The AI plays both sides. For each move, it evaluates all legal resulting positions and picks the one with the highest value (greedy)
-3. After each move, it compares what it predicted *before* the move vs *after* — this difference is the **TD error** (temporal difference)
-4. It updates the network weights using this error, pushing predictions to be more consistent with each other
-5. At game end, the final reward is 1 (Dark won) or 0 (Light won), which propagates back through the chain of predictions
+- **Hidden layer (80 neurons):** Each neuron takes all 198 input numbers, multiplies each by a **weight** (a number learned during training), adds them up, and squishes the result between 0 and 1. This gives 80 numbers.
+- **Output layer (1 neuron):** Takes those 80 numbers, multiplies each by a weight, adds them up, squishes again. Outputs a single number.
 
-**Eligibility traces** (the `lambda` parameter) make this faster — instead of only updating the most recent prediction, the error also partially updates earlier predictions that led to this state. It's like giving credit to moves made several turns ago.
+**What is a neuron?** Just a tiny math function — a weighted sum followed by a squish:
 
-**No exploration needed** — unlike most RL, backgammon has dice rolls which naturally inject randomness. The AI always picks the best move it knows (greedy), and the dice ensure it sees diverse positions.
+```
+inputs:  [0.5, 1.0, 0.3]
+weights: [0.2, -0.8, 0.4]     (learned during training)
 
-**Move selection** when playing against you: the AI evaluates every legal move by simulating it on a copy of the board, encoding the result, and running it through the network. It picks the move that leads to the highest win probability for its side.
+step 1: multiply  → 0.1, -0.8, 0.12
+step 2: add up    → -0.58
+step 3: squish    → 0.36
 
-### What to expect
+output: 0.36
+```
+
+Our network has 15,921 weights total (`198 x 80 + 80 + 80 x 1 + 1`). Those weights **are** the AI's knowledge — everything it knows about backgammon is encoded in those numbers.
+
+**Why 80 neurons?** It's what Tesauro used in the original paper. 40 is too few to capture the subtleties, 160 is slightly stronger but much slower to train. 80 is a good balance.
+
+#### The output: win probability
+
+The output is a number between 0 and 1 — the estimated probability that Dark wins:
+
+- `0.0` = Dark has no chance
+- `0.5` = even game
+- `1.0` = Dark is certain to win
+
+When the AI plays as Light, it flips the value: `1.0 - 0.72 = 0.28`, and picks moves that make Dark's probability as low as possible.
+
+#### The input: 198 features
+
+A **feature** is just a number that describes one aspect of the board. The network can't "look" at the board — it needs the position described as a list of numbers.
+
+For each of the 24 points, for each player, we encode 4 numbers:
+
+| Checkers | Feature 1 | Feature 2 | Feature 3 | Feature 4 |
+|----------|-----------|-----------|-----------|-----------|
+| 0        | 0         | 0         | 0         | 0         |
+| 1        | 1         | 0         | 0         | 0         |
+| 2        | 1         | 1         | 0         | 0         |
+| 3        | 1         | 1         | 1         | 0         |
+| 5        | 1         | 1         | 1         | 1.0       |
+
+The first 3 are flags: "at least 1?", "at least 2?", "at least 3?". The 4th encodes extras as `(n-3)/2`. This encoding matters because 1 checker (a blot, vulnerable), 2 checkers (a made point, blocks opponent), and 3+ checkers have very different strategic meaning.
+
+The full 198 numbers: `24 points x 2 players x 4 features = 192`, plus bar (2), borne off (2), and whose turn (2).
+
+**Example** — the starting position encoded as the AI sees it:
+
+```
+[
+  1,1,0,0,  0,0,0,0,    # point 1:  dark x2
+  0,0,0,0,  0,0,0,0,    # point 2:  empty
+  0,0,0,0,  0,0,0,0,    # point 3:  empty
+  0,0,0,0,  0,0,0,0,    # point 4:  empty
+  0,0,0,0,  0,0,0,0,    # point 5:  empty
+  0,0,0,0,  1,1,1,1.0,  # point 6:  light x5
+  0,0,0,0,  0,0,0,0,    # point 7:  empty
+  0,0,0,0,  1,1,1,0,    # point 8:  light x3
+  ...                    # points 9-11: empty
+  1,1,1,1.0, 0,0,0,0,   # point 12: dark x5
+  0,0,0,0,  1,1,1,1.0,  # point 13: light x5
+  ...                    # points 14-16: empty
+  1,1,1,0,  0,0,0,0,    # point 17: dark x3
+  0,0,0,0,  0,0,0,0,    # point 18: empty
+  1,1,1,1.0, 0,0,0,0,   # point 19: dark x5
+  ...                    # points 20-23: empty
+  0,0,0,0,  1,1,0,0,    # point 24: light x2
+  0, 0,                  # bar:  dark 0, light 0
+  0, 0,                  # off:  dark 0, light 0
+  1, 0                   # turn: dark's turn
+]
+```
+
+#### How it chooses moves
+
+When the AI needs to make a move, say it has 4 legal options:
+
+1. Simulate each move on a copy of the board
+2. Encode each resulting position into 198 numbers
+3. Feed each through the network to get a win probability
+4. Pick the move with the highest probability
+
+```
+Move A: point 13 → 8   → network says 0.47
+Move B: point 13 → 10  → network says 0.52  ← picks this one
+Move C: point 19 → 16  → network says 0.49
+Move D: point 1  → 4   → network says 0.44
+```
+
+#### How it learns
+
+At the start, all weights are random — the network outputs nonsense. But it improves through self-play:
+
+1. The AI plays a full game against itself (both sides)
+2. After each move, it compares its prediction *before* vs *after* — this difference is the **TD error**
+3. It nudges the weights slightly to make predictions more consistent
+4. At game end, the actual result (Dark won = 1, Light won = 0) provides the final correction
+5. Repeat for thousands of games
+
+It's like learning to guess someone's age. At first you're bad at it. But every time you guess and find out the real answer, you adjust. After meeting thousands of people, you're accurate — even though nobody taught you explicit rules.
+
+**Eligibility traces** (the `lambda` parameter) speed this up by giving credit to moves made several turns ago, not just the most recent one.
+
+**No exploration needed** — unlike most reinforcement learning, backgammon has dice rolls which naturally inject randomness. The AI always picks its best move, and the dice ensure it sees diverse positions.
+
+#### What to expect
 
 - ~1,000 episodes: learns basic checker movement
 - ~50,000 episodes: starts playing reasonably
-- ~300,000+ episodes: approaches strong play (the original TD-Gammon paper used 1.5M)
+- ~300,000+ episodes: approaches strong play (the original paper used 1.5M)
 
 The network is small (198 → 80 → 1) so each episode is fast even on CPU.
 
