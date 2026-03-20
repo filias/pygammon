@@ -50,8 +50,22 @@ Options:
 - `--lamda 0.7` — TD(lambda) trace decay
 - `--checkpoint-dir checkpoints` — where to save models
 - `--checkpoint-every 100` — save every N episodes
-- `--resume checkpoints/td_gammon_ep1000` — continue from a checkpoint
+- `--resume checkpoints/td_gammon_final.weights.h5` — continue from a checkpoint
 - `--logdir logs` — TensorBoard log directory
+
+### Resume training
+
+Training sessions can be combined. The `--resume` flag loads the weights from a previous session and continues learning from where it left off:
+
+```bash
+# Session 1: train 1000 episodes
+uv run python -u -m pygammon.ai.train_selfplay --episodes 1000
+
+# Session 2: load the result and train 1000 more
+uv run python -u -m pygammon.ai.train_selfplay --episodes 1000 --resume checkpoints/td_gammon_final.weights.h5
+```
+
+You can do this as many times as you want — train 1000 today, resume with 5000 tomorrow, resume with 50000 next week. The network keeps all the knowledge it learned and keeps improving.
 
 ### Monitor training (optional)
 [TensorBoard](https://www.tensorflow.org/tensorboard) is a web dashboard that visualizes training progress — it plots graphs like win rate and moves per game over time. It's installed with `uv sync --extra ai` but is not required; the console already prints stats every 10 episodes.
