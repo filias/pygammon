@@ -202,6 +202,22 @@ It's like learning to guess someone's age. At first you're bad at it. But every 
 
 The network is small (198 → 80 → 1) so each episode is fast even on CPU.
 
+#### How this compares to professional backgammon engines
+
+Our implementation follows Tesauro's original [TD-Gammon](https://en.wikipedia.org/wiki/TD-Gammon) architecture from 1992. Modern engines like [GNU Backgammon (gnubg)](https://www.gnu.org/software/gnubg/) and [eXtreme Gammon (XG)](https://www.extremegammon.com/) took this approach much further:
+
+| | Pygammon | GNU Backgammon |
+|---|---|---|
+| Networks | 1 | 3 (Contact, Race, Crashed) |
+| Inputs | 198 | 250 (includes derived features like mobility, escape probability, pip loss) |
+| Hidden neurons | 80 | 128 |
+| Outputs | 1 (win probability) | 5 (win, win gammon, win backgammon, lose gammon, lose backgammon) |
+| Bearoff endgame | Neural network | Pre-computed perfect play databases |
+
+gnubg classifies each position as Contact (both sides still engaged), Race (pure racing), or Crashed (one side trapped), and uses a specialized network for each. It also has hand-crafted input features beyond raw board encoding — things like back checker position, containment metrics, and pip loss estimates.
+
+The key insight from TD-Gammon was proving that **self-play + temporal difference learning works for backgammon**. Every strong backgammon program since then has used neural networks trained with some variant of this approach. The "expert positions" aren't stored as a dataset — they're distilled into the network weights during training.
+
 ## Apply formatting
 ```bash
 uv run ruff format
