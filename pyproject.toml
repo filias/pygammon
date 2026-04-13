@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "bpython>=0.24",
+    "bpython>=0.26",
     "pillow>=11.2.1",
     "pydantic-settings>=2.13.1",
     "pyside6>=6.8.0.2",
