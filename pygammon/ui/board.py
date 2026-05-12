@@ -78,9 +78,7 @@ class PygammonScene(QGraphicsScene):
 
         # Tray divider
         mid_y = settings.board_height / 2
-        divider = QGraphicsRectItem(
-            self._tray_x, mid_y - 0.5, settings.tray_width, 1
-        )
+        divider = QGraphicsRectItem(self._tray_x, mid_y - 0.5, settings.tray_width, 1)
         divider.setBrush(QBrush(QColor("#ffffff")))
         divider.setPen(QPen(QColor("#ffffff")))
         self.addItem(divider)
@@ -116,8 +114,15 @@ class PygammonScene(QGraphicsScene):
 
     # --- Score panel ---
 
-    def draw_panel(self, dark_name, light_name, dark_score, light_score,
-                   match_length, current_color):
+    def draw_panel(
+        self,
+        dark_name,
+        light_name,
+        dark_score,
+        light_score,
+        match_length,
+        current_color,
+    ):
         for item in self.panel_items:
             self.removeItem(item)
         self.panel_items.clear()
@@ -136,13 +141,21 @@ class PygammonScene(QGraphicsScene):
 
         # Match info at top
         if match_length > 0:
-            match_text = self._add_text(f"Match to {match_length}", font_label, text_color, cx, 8)
+            match_text = self._add_text(
+                f"Match to {match_length}", font_label, text_color, cx, 8
+            )
             self.panel_items.append(match_text)
 
         # Light player (top)
         y_light = 35
         light_indicator = ">" if current_color == Color.LIGHT else " "
-        lt = self._add_text(f"{light_indicator} {light_name}", font_name, QColor(settings.color_light_checker), cx, y_light)
+        lt = self._add_text(
+            f"{light_indicator} {light_name}",
+            font_name,
+            QColor(settings.color_light_checker),
+            cx,
+            y_light,
+        )
         self.panel_items.append(lt)
         ls = self._add_text(str(light_score), font_score, text_color, cx, y_light + 20)
         self.panel_items.append(ls)
@@ -159,7 +172,13 @@ class PygammonScene(QGraphicsScene):
         # Dark player (bottom)
         y_dark = settings.board_height - 80
         dark_indicator = ">" if current_color == Color.DARK else " "
-        dt = self._add_text(f"{dark_indicator} {dark_name}", font_name, QColor(settings.color_dark_checker), cx, y_dark)
+        dt = self._add_text(
+            f"{dark_indicator} {dark_name}",
+            font_name,
+            QColor(settings.color_dark_checker),
+            cx,
+            y_dark,
+        )
         self.panel_items.append(dt)
         ds = self._add_text(str(dark_score), font_score, text_color, cx, y_dark + 20)
         self.panel_items.append(ds)
@@ -209,8 +228,11 @@ class PygammonScene(QGraphicsScene):
             for ci in range(1, len(checkers) + 1):
                 y = self._calculate_y_checker(point_index, ci)
                 item = CheckerItem(
-                    x, y, settings.checker_radius * 2,
-                    QColor(checker_color), point_index,
+                    x,
+                    y,
+                    settings.checker_radius * 2,
+                    QColor(checker_color),
+                    point_index,
                 )
                 self.addItem(item)
                 self.checker_items.append(item)
@@ -235,10 +257,15 @@ class PygammonScene(QGraphicsScene):
             else:
                 light_count += 1
                 color = settings.color_light_checker
-                y = settings.board_height / 2 + (light_count - 1) * settings.checker_radius * 2
+                y = (
+                    settings.board_height / 2
+                    + (light_count - 1) * settings.checker_radius * 2
+                )
 
             item = CheckerItem(
-                bar_cx, y, settings.checker_radius * 2,
+                bar_cx,
+                y,
+                settings.checker_radius * 2,
                 QColor(color),
                 point_index=0 if checker_color_val == Color.DARK else 25,
             )
@@ -297,7 +324,9 @@ class PygammonScene(QGraphicsScene):
 
         x_start = area_x + (area_w - dice_total_w) / 2
         d1 = DieItem(x_start, y, die1, bg_color=bg_color, pip_color=pip_color)
-        d2 = DieItem(x_start + size + gap, y, die2, bg_color=bg_color, pip_color=pip_color)
+        d2 = DieItem(
+            x_start + size + gap, y, die2, bg_color=bg_color, pip_color=pip_color
+        )
         self.addItem(d1)
         self.addItem(d2)
         self.dice_items.extend([d1, d2])

@@ -129,7 +129,12 @@ class TestPointFromPosition:
         from pygammon.conf import settings
 
         px = settings.panel_width
-        x = px + 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
+        x = (
+            px
+            + 11 * settings.point_width
+            + settings.bar_width
+            + settings.point_width * 0.5
+        )
         pos = QPointF(x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) == 12
 
@@ -146,7 +151,12 @@ class TestPointFromPosition:
         from pygammon.conf import settings
 
         px = settings.panel_width
-        x = px + 11 * settings.point_width + settings.bar_width + settings.point_width * 0.5
+        x = (
+            px
+            + 11 * settings.point_width
+            + settings.bar_width
+            + settings.point_width * 0.5
+        )
         pos = QPointF(x, settings.board_height * 0.75)
         assert scene._point_from_position(pos) == 13
 
@@ -164,7 +174,12 @@ class TestPointFromPosition:
         from pygammon.conf import settings
 
         px = settings.panel_width
-        tray_x = px + 12 * settings.point_width + settings.bar_width + settings.tray_width * 0.5
+        tray_x = (
+            px
+            + 12 * settings.point_width
+            + settings.bar_width
+            + settings.tray_width * 0.5
+        )
         pos = QPointF(tray_x, settings.board_height * 0.25)
         assert scene._point_from_position(pos) == 0  # Light bear-off
 

@@ -74,6 +74,7 @@ class GameEngine:
             raise ValueError(f"Cannot do opening roll in phase {self.phase}")
 
         import secrets
+
         dark_die = secrets.randbelow(6) + 1
         light_die = secrets.randbelow(6) + 1
 
@@ -190,18 +191,18 @@ class GameEngine:
 
         valid_moves = self.get_valid_moves()
         if (from_point, to_point, die_value) not in valid_moves:
-            raise ValueError(
-                f"Illegal move: ({from_point}, {to_point}, {die_value})"
-            )
+            raise ValueError(f"Illegal move: ({from_point}, {to_point}, {die_value})")
 
-        self._undo_stack.append(_Snapshot(
-            position={k: list(v) for k, v in self.board.position.items()},
-            bar=list(self.board.bar),
-            off_dark=list(self.board.off_dark),
-            off_light=list(self.board.off_light),
-            remaining_dice=list(self.remaining_dice),
-            phase=self.phase,
-        ))
+        self._undo_stack.append(
+            _Snapshot(
+                position={k: list(v) for k, v in self.board.position.items()},
+                bar=list(self.board.bar),
+                off_dark=list(self.board.off_dark),
+                off_light=list(self.board.off_light),
+                remaining_dice=list(self.remaining_dice),
+                phase=self.phase,
+            )
+        )
 
         player = self.current_player
 

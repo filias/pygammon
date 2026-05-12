@@ -16,8 +16,13 @@ _match_state = {
 }
 
 
-def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_color=None,
-                reset_scores=True):
+def create_game(
+    window: BackgammonWindow,
+    match_length=0,
+    ai_player=None,
+    ai_color=None,
+    reset_scores=True,
+):
     """Create and wire up a new game."""
     if reset_scores:
         _match_state["scores"] = {Color.DARK: 0, Color.LIGHT: 0}
@@ -44,7 +49,9 @@ def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_col
         lambda d1, d2: _on_dice_rolled(scene, window, controller, d1, d2)
     )
     controller.turn_changed.connect(
-        lambda name, color: _on_turn_changed(scene, window, controller, game, name, color)
+        lambda name, color: _on_turn_changed(
+            scene, window, controller, game, name, color
+        )
     )
     controller.valid_moves_changed.connect(
         lambda moves: _on_valid_moves(scene, moves, controller)
@@ -59,13 +66,15 @@ def create_game(window: BackgammonWindow, match_length=0, ai_player=None, ai_col
     controller.double_proposed.connect(
         lambda name: _on_double_proposed(window, controller, name)
     )
-    controller.cube_updated.connect(
-        lambda value, owner: scene.draw_cube(value, owner)
-    )
+    controller.cube_updated.connect(lambda value, owner: scene.draw_cube(value, owner))
 
     # Disconnect old button signals before reconnecting
-    for btn in [window.roll_button, window.undo_button, window.confirm_button,
-                window.double_button]:
+    for btn in [
+        window.roll_button,
+        window.undo_button,
+        window.confirm_button,
+        window.double_button,
+    ]:
         try:
             btn.clicked.disconnect()
         except RuntimeError:
@@ -111,6 +120,7 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
     scene.clear_dice()
     from pygammon.ui.dice import DieItem
     from pygammon.conf import settings as s
+
     size = s.die_size
     _PX = s.panel_width
     mid_y = s.board_height / 2
@@ -122,16 +132,18 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
     right_x = scene._bar_x + s.bar_width
     right_w = scene._tray_x - right_x
     dx = right_x + (right_w - size) / 2
-    d1 = DieItem(dx, y, dark_die,
-                 bg_color=s.color_dark_checker, pip_color=s.color_light_checker)
+    d1 = DieItem(
+        dx, y, dark_die, bg_color=s.color_dark_checker, pip_color=s.color_light_checker
+    )
     scene.addItem(d1)
     scene.dice_items.append(d1)
 
     # Light's die — left half, centered
     left_w = scene._bar_x - _PX
     lx = _PX + (left_w - size) / 2
-    d2 = DieItem(lx, y, light_die,
-                 bg_color=s.color_light_checker, pip_color=s.color_dark_checker)
+    d2 = DieItem(
+        lx, y, light_die, bg_color=s.color_light_checker, pip_color=s.color_dark_checker
+    )
     scene.addItem(d2)
     scene.dice_items.append(d2)
 
@@ -150,9 +162,7 @@ def _on_opening_rolled(scene, window, controller, dark_die, light_die, is_tie):
 def _on_board_updated(scene, game, window, controller):
     scene.refresh_board()
     window.undo_button.setEnabled(controller.engine.can_undo)
-    window.confirm_button.setEnabled(
-        controller.engine.phase == GamePhase.TURN_COMPLETE
-    )
+    window.confirm_button.setEnabled(controller.engine.phase == GamePhase.TURN_COMPLETE)
     window.double_button.setEnabled(controller.engine.can_double)
 
 
@@ -216,7 +226,9 @@ def _on_game_over(window, game, winner, points, desc):
         QMessageBox.information(window, "Game Over", msg)
     else:
         QMessageBox.information(
-            window, "Game Over", msg + "\n\nStarting next game...",
+            window,
+            "Game Over",
+            msg + "\n\nStarting next game...",
         )
         # Start next game in the match
         create_game(
@@ -248,7 +260,10 @@ def _on_double_proposed(window, controller, proposer_name):
 
 def _play_vs_ai(window):
     model_path, _ = QFileDialog.getOpenFileName(
-        window, "Select AI Model Checkpoint", "checkpoints", "All Files (*)",
+        window,
+        "Select AI Model Checkpoint",
+        "checkpoints",
+        "All Files (*)",
     )
     if not model_path:
         return
@@ -272,7 +287,9 @@ if __name__ == "__main__":
     window.new_game_action.triggered.connect(lambda: create_game(window))
     window.play_vs_ai_action.triggered.connect(lambda: _play_vs_ai(window))
     for length, action in window.match_actions.items():
-        action.triggered.connect(lambda checked=False, ml=length: create_game(window, match_length=ml))
+        action.triggered.connect(
+            lambda checked=False, ml=length: create_game(window, match_length=ml)
+        )
 
     window.show()
     app.exec()

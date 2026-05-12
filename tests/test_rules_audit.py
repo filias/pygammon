@@ -6,6 +6,7 @@ we explicitly want to lock in as the engine evolves. Tests marked `xfail` are
 known rule-gaps documented for the team — if one starts passing, flip it to a
 regular test.
 """
+
 import pytest
 from unittest.mock import patch
 
@@ -130,9 +131,7 @@ class TestForfeitTurn:
     def test_no_legal_moves_transitions_to_turn_complete(self, engine):
         # Dark is INCREASING → enters from bar (point 0) onto points 1..6.
         # Block all entry points with 2+ light checkers.
-        engine.board.position = {
-            p: [Color.LIGHT, Color.LIGHT] for p in range(1, 7)
-        }
+        engine.board.position = {p: [Color.LIGHT, Color.LIGHT] for p in range(1, 7)}
         engine.board.bar = [Color.DARK]
         with patch("pygammon.logic.game_engine.roll", return_value=(3, 5)):
             engine.roll_dice()

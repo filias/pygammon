@@ -29,8 +29,12 @@ def main():
     parser.add_argument(
         "--checkpoint-every", type=int, default=100, help="Save every N episodes"
     )
-    parser.add_argument("--resume", type=str, default=None, help="Resume from checkpoint")
-    parser.add_argument("--logdir", type=str, default="logs", help="TensorBoard log dir")
+    parser.add_argument(
+        "--resume", type=str, default=None, help="Resume from checkpoint"
+    )
+    parser.add_argument(
+        "--logdir", type=str, default="logs", help="TensorBoard log dir"
+    )
     args = parser.parse_args()
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
@@ -50,7 +54,9 @@ def main():
         os.makedirs(args.logdir, exist_ok=True)
         writer = tf.summary.create_file_writer(args.logdir)
     else:
-        print("TensorBoard not installed, skipping logging. Install with: uv pip install tensorboard")
+        print(
+            "TensorBoard not installed, skipping logging. Install with: uv pip install tensorboard"
+        )
 
     dark_wins = 0
     total_moves = 0
@@ -65,21 +71,21 @@ def main():
         if writer is not None:
             with writer.as_default():
                 tf.summary.scalar("moves_per_game", stats["moves"], step=episode)
-                tf.summary.scalar(
-                    "dark_win_rate", dark_wins / episode, step=episode
-                )
+                tf.summary.scalar("dark_win_rate", dark_wins / episode, step=episode)
 
         if episode % 10 == 0:
             elapsed = time.time() - start_time
             print(
                 f"Episode {episode}/{args.episodes} | "
-                f"Dark win rate: {dark_wins/episode:.2%} | "
-                f"Avg moves: {total_moves/episode:.0f} | "
+                f"Dark win rate: {dark_wins / episode:.2%} | "
+                f"Avg moves: {total_moves / episode:.0f} | "
                 f"Time: {elapsed:.1f}s"
             )
 
         if episode % args.checkpoint_every == 0:
-            path = os.path.join(args.checkpoint_dir, f"td_gammon_ep{episode}.weights.h5")
+            path = os.path.join(
+                args.checkpoint_dir, f"td_gammon_ep{episode}.weights.h5"
+            )
             model.save_weights(path)
             print(f"Checkpoint saved: {path}")
 

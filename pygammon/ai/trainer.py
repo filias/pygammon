@@ -65,14 +65,11 @@ class TDTrainer:
                 with tf.GradientTape() as tape:
                     current_value = self.model(x)
 
-                gradients = tape.gradient(
-                    current_value, self.model.trainable_variables
-                )
+                gradients = tape.gradient(current_value, self.model.trainable_variables)
 
                 # Update traces
                 traces = [
-                    self.lamda * trace + grad
-                    for trace, grad in zip(traces, gradients)
+                    self.lamda * trace + grad for trace, grad in zip(traces, gradients)
                 ]
 
                 # TD update (if we have a previous value)

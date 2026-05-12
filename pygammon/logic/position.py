@@ -4,9 +4,10 @@ from pygammon.logic.models import Position, Checker, Board, Color
 
 
 class WinType(StrEnum):
-    SINGLE = "single"        # 1x cube value
-    GAMMON = "gammon"         # 2x cube value
-    BACKGAMMON = "backgammon" # 3x cube value
+    SINGLE = "single"  # 1x cube value
+    GAMMON = "gammon"  # 2x cube value
+    BACKGAMMON = "backgammon"  # 3x cube value
+
 
 initial_position = Position(
     {

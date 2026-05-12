@@ -2,7 +2,11 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QPen
-from PySide6.QtWidgets import QGraphicsEllipseItem, QGraphicsItemGroup, QGraphicsRectItem
+from PySide6.QtWidgets import (
+    QGraphicsEllipseItem,
+    QGraphicsItemGroup,
+    QGraphicsRectItem,
+)
 
 from pygammon.conf import settings
 
@@ -14,9 +18,12 @@ _PIP_POSITIONS = {
     4: [(0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)],
     5: [(0.25, 0.25), (0.75, 0.25), (0.5, 0.5), (0.25, 0.75), (0.75, 0.75)],
     6: [
-        (0.25, 0.25), (0.75, 0.25),
-        (0.25, 0.5), (0.75, 0.5),
-        (0.25, 0.75), (0.75, 0.75),
+        (0.25, 0.25),
+        (0.75, 0.25),
+        (0.25, 0.5),
+        (0.75, 0.5),
+        (0.25, 0.75),
+        (0.75, 0.75),
     ],
 }
 

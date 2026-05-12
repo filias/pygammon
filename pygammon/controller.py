@@ -132,8 +132,7 @@ class GameController(QObject):
         else:
             valid = self.engine.get_valid_moves()
             matching = [
-                m for m in valid
-                if m[0] == self.selected_point and m[1] == point_index
+                m for m in valid if m[0] == self.selected_point and m[1] == point_index
             ]
             if matching:
                 move = matching[0]

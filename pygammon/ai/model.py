@@ -14,9 +14,7 @@ class TDGammonModel(tf.keras.Model):
         self.hidden = tf.keras.layers.Dense(
             hidden_size, activation="sigmoid", name="hidden"
         )
-        self.output_layer = tf.keras.layers.Dense(
-            1, activation="sigmoid", name="value"
-        )
+        self.output_layer = tf.keras.layers.Dense(1, activation="sigmoid", name="value")
 
     def call(self, x):
         h = self.hidden(x)

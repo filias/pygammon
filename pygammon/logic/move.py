@@ -1,4 +1,3 @@
-import copy
 from typing import List, Optional, Tuple
 
 from pygammon.logic.models import Direction, Player, Position, Point
