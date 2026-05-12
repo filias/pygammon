@@ -236,4 +236,34 @@ View: PygammonScene, CheckerItem, QGraphicsView
 Controller: GameController, GameEngine, app.py
 
 ## Project Structure
-<img src="structure.png" width="200">
+
+```
+pygammon/
+├── app.py                      # Entry point
+├── pygammon/
+│   ├── ai/                     # Self-play AI training (TensorFlow)
+│   │   ├── model.py
+│   │   ├── player.py
+│   │   ├── trainer.py
+│   │   └── train_selfplay.py
+│   ├── engine/                 # Headless engine API + encoding (for AI)
+│   │   ├── api.py
+│   │   └── encoding.py
+│   ├── logic/                  # Core game rules (Model)
+│   │   ├── dice.py
+│   │   ├── game_engine.py
+│   │   ├── models.py
+│   │   ├── move.py
+│   │   └── position.py
+│   ├── ui/                     # PySide6 board UI (View)
+│   │   ├── board.py
+│   │   ├── checker.py
+│   │   ├── dice.py
+│   │   └── window.py
+│   ├── conf.py
+│   └── controller.py           # Controller (MVC)
+├── tests/                      # Pytest suite
+├── .github/workflows/          # CI + Dependabot auto-merge
+├── pyproject.toml
+└── uv.lock
+```
