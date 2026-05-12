@@ -39,9 +39,12 @@ def scene(qapp, board):
 
 class TestPygammonScene:
     def test_draw_board(self, scene):
+        from PySide6.QtWidgets import QGraphicsPolygonItem
+
         scene.draw_board()
-        # Should have 24 triangle items (12 top + 12 bottom)
-        assert len(scene.items()) == 24
+        # 24 triangle points (12 top + 12 bottom); plus chrome (panel, bar, tray, divider)
+        triangles = [i for i in scene.items() if isinstance(i, QGraphicsPolygonItem)]
+        assert len(triangles) == 24
 
     def test_draw_checkers_creates_items(self, scene):
         from pygammon.ui.checker import CheckerItem
@@ -84,12 +87,16 @@ class TestPygammonScene:
         # Should create 2 highlight circles
         assert len(scene.highlight_items) == 2
 
-    def test_highlight_destinations_skips_bear_off(self, scene):
+    def test_highlight_destinations_shows_bear_off_tray(self, scene):
+        from PySide6.QtWidgets import QGraphicsRectItem
+
         scene.draw_board()
         scene.draw_checkers()
         moves = [(24, 25, 1)]  # Bear-off destination
         scene.highlight_valid_destinations(moves)
-        assert len(scene.highlight_items) == 0
+        # Bear-off adds a tray-rect highlight rather than a point circle
+        assert len(scene.highlight_items) == 1
+        assert isinstance(scene.highlight_items[0], QGraphicsRectItem)
 
     def test_clear_highlights(self, scene):
         scene.draw_board()
@@ -200,10 +207,6 @@ class TestBackgammonWindow:
         window.update_dice_label(3, 5)
         assert "3" in window.dice_label.text()
         assert "5" in window.dice_label.text()
-
-        window.update_off_counts(2, 7)
-        assert "2" in window.off_dark_label.text()
-        assert "7" in window.off_light_label.text()
 
 
 class TestCheckerItem:

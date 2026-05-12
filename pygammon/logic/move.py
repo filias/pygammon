@@ -1,3 +1,4 @@
+import copy
 from typing import List, Optional, Tuple
 
 from pygammon.logic.models import Direction, Player, Position, Point
@@ -132,7 +133,24 @@ def get_valid_moves(
     - Bar-first rule: if player has checkers on bar, must enter them first
     - Bearing off: only when all checkers are in home board
     - Blocking: can't land on 2+ opponent checkers
+    - Must-play-both rule: if both dice can be used (in some order), only
+      offer first moves that lead to using both dice
+    - Must-play-higher rule: if only one die can be played, must be the higher
     """
+    raw = _get_raw_moves(player, position, remaining_dice, bar)
+
+    # Filtering only matters when we have exactly 2 different dice values
+    unique_dice = set(remaining_dice)
+    if len(remaining_dice) != 2 or len(unique_dice) != 2:
+        return raw
+
+    return _apply_must_play_rules(raw, player, position, remaining_dice, bar)
+
+
+def _get_raw_moves(
+    player: Player, position: Position, remaining_dice: List[int], bar: list
+) -> List[Tuple[int, int, int]]:
+    """Enumerate all individually-legal moves without considering sequencing."""
     moves = []
     unique_dice = set(remaining_dice)
     has_checker_on_bar = any(c == player.color for c in bar)
@@ -166,6 +184,60 @@ def get_valid_moves(
                         moves.append((point, player.bear_off, die_value))
 
     return moves
+
+
+def _simulate_move(
+    move: Tuple[int, int, int], player: Player, position: Position, bar: list
+) -> Tuple[Position, list]:
+    """Apply a move on deep-copied state and return the new (position, bar)."""
+    pos = {k: list(v) for k, v in position.items()}
+    new_bar = list(bar)
+    from_point, to_point, _ = move
+
+    # Bar entry: transfer checker from bar into position before moving
+    if from_point == player.bar:
+        new_bar.remove(player.color)
+        pos.setdefault(from_point, []).insert(0, player.color)
+
+    opponent_color, _borne_off = move_checker(from_point, to_point, player, pos)
+
+    if opponent_color:
+        new_bar.append(opponent_color)
+
+    return pos, new_bar
+
+
+def _apply_must_play_rules(
+    raw_moves: List[Tuple[int, int, int]],
+    player: Player,
+    position: Position,
+    remaining_dice: List[int],
+    bar: list,
+) -> List[Tuple[int, int, int]]:
+    """
+    Filter first-moves so the player maximises dice usage and, when only one
+    die can be played, is forced to use the higher value.
+    """
+    # For each candidate first move, check whether the other die can follow
+    both_dice_moves = []
+    for move in raw_moves:
+        new_pos, new_bar = _simulate_move(move, player, position, bar)
+        other_dice = list(remaining_dice)
+        other_dice.remove(move[2])
+        follow_ups = _get_raw_moves(player, new_pos, other_dice, new_bar)
+        if follow_ups:
+            both_dice_moves.append(move)
+
+    if both_dice_moves:
+        return both_dice_moves
+
+    # Only one die can be played — must be the higher
+    if not raw_moves:
+        return []
+
+    higher = max(remaining_dice)
+    higher_moves = [m for m in raw_moves if m[2] == higher]
+    return higher_moves if higher_moves else raw_moves
 
 
 def _is_valid_bear_off(

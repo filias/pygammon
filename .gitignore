@@ -106,3 +106,8 @@ venv.bak/
 # AI training artifacts
 checkpoints/
 logs/
+matches/
+
+# OS / IDE
+.DS_Store
+.idea/
