@@ -14,7 +14,7 @@ A backgammon game written in **Python**, using **PySide6** for the graphical int
 ## Screenshot
 
 
-<img src="board.png" width="200">
+<img src="board.png" width="600">
 
 ---
 
