@@ -5,8 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.21+-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 
-A backgammon game written in **Python**, using **PySide6** for the graphical interface and following a **Model–View–Controller (MVC)** architecture.
+A backgammon game written in **Python**, using **PySide6** for the graphical interface and following a **Model–View–Controller (MVC)** architecture. An optional **self-play AI training mode** powered by **TensorFlow** lets you train and resume a TD-Gammon-style neural network.
 
 ---
 
