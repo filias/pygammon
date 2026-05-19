@@ -8,15 +8,15 @@ dependencies = [
     "bpython>=0.26",
     "pillow>=12.2.0",
     "pydantic-settings>=2.14.1",
-    "pyside6>=6.11.0",
+    "pyside6>=6.11.1",
     "pytest>=9.0.3",
-    "ruff>=0.15.12",
+    "ruff>=0.15.13",
 ]
 
 [project.optional-dependencies]
-ai = ["tensorflow>=2.21.0", "numpy>=2.4.4", "tensorboard>=2.20.0", "setuptools<83"]
+ai = ["tensorflow>=2.21.0", "numpy>=2.4.6", "tensorboard>=2.20.0", "setuptools<83"]
 
 [dependency-groups]
 dev = [
-    "coverage>=7.13.5",
+    "coverage>=7.14.0",
 ]
