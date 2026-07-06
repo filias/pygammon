@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "bpython>=0.26",
-    "pillow>=12.2.0",
+    "pillow>=12.3.0",
     "pydantic-settings>=2.14.2",
     "pyside6>=6.11.1",
     "pytest>=9.1.1",
@@ -14,9 +14,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ai = ["tensorflow>=2.21.0", "numpy>=2.4.6", "tensorboard>=2.20.0", "setuptools<83"]
+ai = ["tensorflow>=2.21.0", "numpy>=2.4.6", "tensorboard>=2.21.0", "setuptools<83"]
 
 [dependency-groups]
 dev = [
-    "coverage>=7.14.3",
+    "coverage>=7.15.0",
 ]
