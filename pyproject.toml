@@ -10,7 +10,7 @@ dependencies = [
     "pydantic-settings>=2.14.2",
     "pyside6>=6.11.1",
     "pytest>=9.1.1",
-    "ruff>=0.15.21",
+    "ruff>=0.15.22",
 ]
 
 [project.optional-dependencies]
@@ -18,5 +18,5 @@ ai = ["tensorflow>=2.21.0", "numpy>=2.4.6", "tensorboard>=2.21.0", "setuptools<8
 
 [dependency-groups]
 dev = [
-    "coverage>=7.15.1",
+    "coverage>=7.15.2",
 ]
